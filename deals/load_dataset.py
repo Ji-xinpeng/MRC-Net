@@ -13,7 +13,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-annot_path = './data/{}_annotation'.format(args.dataset)
+annot_path = '/home/ubuntu/Desktop/jixinpeng/mynet/data/{}_annotation'.format(args.dataset)
 label_path = '../{}/'.format(args.dataset) # for submitting testing results
 
 
