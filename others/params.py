@@ -6,7 +6,7 @@ warnings.filterwarnings("ignore")
 
 def parse_opts():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cuda_id', type=str, default='0, 1, 2, 3')
+    parser.add_argument('--cuda_id', type=str, default='0')
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
@@ -23,7 +23,7 @@ def parse_opts():
                         help='Scale step for multiscale cropping')
     parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
                         metavar='LR', help='initial learning rate')
-    parser.add_argument('--lr_steps', type=float, default=[15, 30, 45], nargs="+",
+    parser.add_argument('--lr_steps', type=float, default=[13, 26, 39], nargs="+",
                         help='lr steps for decreasing learning rate')
     parser.add_argument('--clip_gradient', '--gd', type=int, default=20, help='gradient clip')
     parser.add_argument('--shift_div', default=8, type=int)
@@ -35,7 +35,7 @@ def parse_opts():
     parser.add_argument('--dataset', default='EgoGesture', type=str)   # sthv2    EgoGesture    jester
     parser.add_argument('--weight_decay', '--wd', default=5e-4, type=float,
                         metavar='W', help='weight decay (default: 5e-4)')
-    parser.add_argument('--epochs', default=60, type=int, metavar='N',
+    parser.add_argument('--epochs', default=50, type=int, metavar='N',
                         help='number of total epochs to run')
     parser.add_argument('--pretrained', default='imagenet', type=str)
     parser.add_argument('--use_video_swin_transformer', default=False, type=str)
@@ -45,6 +45,7 @@ def parse_opts():
     parser.add_argument('--if_need_load_dataset', default=False, type=str)  #
     parser.add_argument('--begin_split', default=4, type=str)  # my_block
     parser.add_argument('--if_get_data_and_label', default=True, type=str)
+    parser.add_argument('--is_detector_classify', default="classify", type=str)
 
     args = parser.parse_args()
     return args

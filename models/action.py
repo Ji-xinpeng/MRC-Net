@@ -60,19 +60,16 @@ class Action(nn.Module):
         x_shift = x_shift.contiguous().view(nt, c, h, w)
 
         # x_p1 = self.mychannelblock(x_shift)
-        # # x_p1 = self.my1Dblock(x_shift
         # x_p1 = x_p1 * x_shift + x_shift
 
+        # x_p2 = self.my2Dblock(x_shift)
+        # x_p2 = x_p2 * x_shift + x_shift
+
+        x_p1 = self.mychannelblock(x_shift)
         x_p2 = self.my2Dblock(x_shift)
-        x_p2 = x_p2 * x_shift + x_shift
+        x_p1 = x_p1 * x_p2 * x_shift + x_shift
 
-        # x_p1 = self.mychannelblock(x_p2)
-        # x_p1 = x_p1 * x_shift + x_shift
-
-        # x_p3 = self.my3Dblock(x_p1)
-        # x_p3 = x_p3 * x_shift + x_shift
-
-        out = self.net(x_p2)
+        out = self.net(x_p1)
         return out
 
 

@@ -19,7 +19,7 @@ model = TSN(params['num_classes'], args.clip_len, 'RGB',
                       shift_div=args.shift_div,
                       dropout=args.dropout,
                       img_feature_dim=224,
-                      pretrain='False',  # 'imagenet' or False
+                      pretrain='imagenet',  # 'imagenet' or False
                       consensus_type='avg',
                       fc_lr5=True)
 

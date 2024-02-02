@@ -13,8 +13,8 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-annot_path = '/home/ubuntu/Desktop/jixinpeng/mynet/data/{}_annotation'.format(args.dataset)
-label_path = '../{}/'.format(args.dataset) # for submitting testing results
+annot_path = '/root/autodl-tmp/MRC-Net/data/{}_annotation'.format(args.dataset)
+label_path = '/root/autodl-tmp/{}/'.format(args.dataset) # for submitting testing results
 
 
 def load_dataset():

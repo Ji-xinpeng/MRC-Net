@@ -244,6 +244,9 @@ def my_train(model, train_dataloader, val_dataloader, device, record):
                                           str(params['frame_sample_rate']) + "_checkpoint" + ".pth.tar")
                 utils.save_checkpoint(model, optimizer, checkpoint)
                 best_acc = val_acc
+                save_path = os.path.join(model_save_dir, args.base_model + args.is_detector_classify + ".pth")
+                torch.save(model, save_path)
+
 
             if top5_acc > best_acc_top5:
                 best_acc_top5 = top5_acc

@@ -147,15 +147,15 @@ class MobileNetV2(nn.Module):
 def mobilenet_v2(pretrained=True):
     model = MobileNetV2(width_mult=1)
 
-    pretrained_model_path = '/home/ubuntu/Desktop/jixinpeng/ACTION-Net-main/pretrained/mobilenetv2_1.0-f2a8633.pth.tar'
+    pretrained_model_path = '/root/autodl-tmp/MRC-Net/pretrained_weights/mobilenetv2_1.0-f2a8633.pth.tar'
     print(pretrained_model_path)
     state_dict = torch.load(pretrained_model_path)
     model.load_state_dict(state_dict)
 
     return model
 
-if __name__ == '__main__':
-    net = mobilenet_v2(True)
+# if __name__ == '__main__':
+#     net = mobilenet_v2(True)
 
 
 

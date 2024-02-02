@@ -18,25 +18,76 @@ from sklearn.utils import shuffle
 import math
 from copy import copy
 
-from others.params import *
-
-
-"""
-This script creates annotation file for training, validation and testing.
-Run this file first before processing anything
-"""
-
-import os
-
-import numpy as np
-import pandas as pd
+# from others.params import *
 from tqdm import tqdm
 from PIL import Image
 import torchvision.transforms.functional as TF
 # # label files stored path
-label_path = '../EgoGesture/labels-final-revised1'
+label_path = '/root/autodl-tmp/EgoGesture/labels-final-revised1'
 # # frame files stored path
-frame_path = '../EgoGesture/frames'
+frame_path = '/root/autodl-tmp/EgoGesture/frames'
+
+
+
+def construct_detect_annot(save_path, mode):
+    annot_dict = {k: [] for k in ['rgb', 'depth', 'label']}
+
+    dectct_dict = {k: [] for k in ['dectect', 'label']}
+    if mode == 'detect_train':
+        sub_ids = [3, 4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 44, 45,
+                   46, 48, 49, 50, 2, 9, 11, 14, 18, 19, 28, 31, 41, 47]
+    elif mode == 'detect_val':
+        sub_ids = [1, 7, 12, 13, 24, 29, 33, 34, 35, 37]
+
+    sub_ids = [i for i in range(1, 51)]
+    for sub_i in tqdm(sub_ids):
+        frame_path_sub = os.path.join(frame_path, 'Subject{:02}'.format(sub_i))
+        label_path_sub = os.path.join(label_path, 'subject{:02}'.format(sub_i))
+        assert len([name for name in os.listdir(label_path_sub) if name != '.DS_Store']) == len(
+            [name for name in os.listdir(frame_path_sub)])
+        for scene_i in range(1, len([name for name in os.listdir(frame_path_sub)]) + 1):
+            rgb_path = os.path.join(frame_path_sub, 'Scene{:01}'.format(scene_i), 'Color')
+            depth_path = os.path.join(frame_path_sub, 'Scene{:01}'.format(scene_i), 'Depth')
+            label_path_iter = os.path.join(label_path_sub, 'Scene{:01}'.format(scene_i))
+            assert len([name for name in os.listdir(label_path_iter) if 'csv' == name[-3::]]) == len(
+                [name for name in os.listdir(rgb_path)])
+            assert len([name for name in os.listdir(label_path_iter) if 'csv' == name[-3::]]) == len(
+                [name for name in os.listdir(depth_path)])
+            for group_i in range(1, len([name for name in os.listdir(rgb_path)]) + 1):
+                rgb_path_group = os.path.join(rgb_path, 'rgb{:01}'.format(group_i))
+                depth_path_group = os.path.join(depth_path, 'depth{:01}'.format(group_i))
+                if os.path.isfile(os.path.join(label_path_iter, 'Group{:01}.csv'.format(group_i))):
+                    label_path_group = os.path.join(label_path_iter, 'Group{:01}.csv'.format(group_i))
+                else:
+                    label_path_group = os.path.join(label_path_iter, 'group{:01}.csv'.format(group_i))
+                # read the annotation files in the label path
+                data_note = pd.read_csv(label_path_group, names=['class', 'start', 'end'])
+                data_note = data_note[np.isnan(data_note['start']) == False]
+
+                dectct_start = 0
+                dectect_end = 0
+
+                for data_i in range(data_note.values.shape[0]):
+                    label = data_note.values[data_i, 0]
+                    rgb = []
+                    dectect_end = int(data_note.values[data_i, 1])
+                    for img_ind in range(int(data_note.values[data_i, 1]), int(data_note.values[data_i, 2] - 1)):
+                        rgb.append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
+                        dectct_dict['dectect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
+                        dectct_dict['label'].append(1)
+                    for dec in range(dectct_start, dectect_end):
+                        dectct_dict['dectect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(dec)))
+                        dectct_dict['label'].append(0)
+                    dectct_start = int(data_note.values[data_i, 2])
+                    annot_dict['rgb'].append(rgb)
+                    annot_dict['label'].append(int(label)-1)
+
+    dectect_df = pd.DataFrame(dectct_dict)
+    print("len(dectect_df) : ", len(dectect_df))
+    save_file = os.path.join(save_path, '{}.pkl'.format(mode))
+    dectect_df.to_pickle(save_file)
+
+    
 
 
 
@@ -91,9 +142,11 @@ def construct_annot(save_path, mode):
     annot_df.to_pickle(save_file)
 
 
-# save_path = './data/EgoGesture_annotation'
+save_path = '/root/autodl-tmp/MRC-Net/data/EgoGesture_annotation'
 # if not os.path.exists(save_path):
 #     os.mkdir(save_path)
+construct_detect_annot(save_path, 'detect_val')
+construct_detect_annot(save_path, 'detect_train')
 
 # if args.if_need_load_dataset == True:
 #     construct_annot(save_path, 'train')
@@ -142,13 +195,6 @@ class dataset_video(Dataset):
         selected_indice = self.temporal_transform(indices)
         clip_rgb_frames = []
         clip_depth_frames = []
-        # print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        # if args.if_get_data_and_label == True:
-        #     for index in selected_indice:
-        #         # print(rgb_name[index])
-        #         image = Image.open(rgb_name[index])
-        #         save_path_ = "/home/ubuntu/Desktop/jixinpeng/mynet/1/" + "label" + str(label) + '_' + str(index) + '.jpg'
-        #         image.save(save_path_)
 
         for i, frame_name_i in enumerate(selected_indice):
             rgb_cache = Image.open(rgb_name[frame_name_i]).convert("RGB")
@@ -161,14 +207,6 @@ class dataset_video(Dataset):
 
         n, h, w = clip_rgb_frames.size()
         copy_frames = clip_rgb_frames.view(-1, 3, h, w)
-        # if args.if_get_data_and_label == True:
-        #     for e in range(8):
-        #         f = copy_frames[i,:,:,:]
-        #         save_path_ = "/home/ubuntu/Desktop/jixinpeng/mynet/2/" + "label" + str(label) + '_' + str(e) + '.jpg'
-        #         im = TF.to_pil_image(f)
-        #         im.save(save_path_)
-        #     args.if_get_data_and_label = False
-        # print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
         return clip_rgb_frames.view(-1, 3, h, w), clip_depth_frames.view(-1, 1, h, w), int(label)
 

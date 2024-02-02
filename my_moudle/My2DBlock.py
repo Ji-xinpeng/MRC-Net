@@ -37,15 +37,6 @@ class My2DBlock(nn.Module):
         x_2d = x_2d.reshape(n_batch, args.clip_len, h, w, 1)
         x_2d = self.positionalEncoding3D(x_2d)
 
-
-        #---------------------------------------------------------------------------------#
-        # x_2d = x_2d.reshape(n_batch, args.clip_len*h*w, 1)
-        # x_2d = self.positionalEncoding1D(x_2d)
-        # x_2d = x_2d.reshape(n_batch, args.clip_len, h, w, 1)
-        # ---------------------------------------------------------------------------------#
-
-
-
         x_2d = x_2d.to(x.device)
         x_2d = x_2d.permute(0, 1, 4, 2, 3).contiguous()  # n,t,1,h,w
         c = 1
@@ -68,12 +59,4 @@ class My2DBlock(nn.Module):
         # x_out = self.sigmoid(x_out)
 
         return x_out   # nt, c, h, w
-
-# if __name__=='__main__':
-#     model = My2DBlock(64)
-#
-#     input = torch.randn(16, 64, 56, 56)
-#     out = model(input)
-#     print(out.shape)
-
 
