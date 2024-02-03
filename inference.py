@@ -65,7 +65,7 @@ current_directory = os.path.dirname(current_file)
 
 checkpoint_path = current_directory + '/weights/mobilenetv2classify.pth'
 # 把这个地址换成自己要推理的视频帧所在文件夹的地址
-annot_path = "/root/autodl-tmp/MRC-Net/data/EgoGesture_annotation" 
+annot_path = current_directory + "/data/EgoGesture_annotation" 
 
 inference = Inference(checkpoint_path_classify=checkpoint_path,
                       checkpoint_path_dectet=checkpoint_path,
