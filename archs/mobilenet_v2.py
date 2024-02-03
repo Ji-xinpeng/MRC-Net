@@ -3,7 +3,7 @@
 import torch.nn as nn
 import math
 import torch
-
+import os
 
 def conv_bn(inp, oup, stride):
     return nn.Sequential(
@@ -146,8 +146,13 @@ class MobileNetV2(nn.Module):
 
 def mobilenet_v2(pretrained=True):
     model = MobileNetV2(width_mult=1)
-
-    pretrained_model_path = '/root/autodl-tmp/MRC-Net/pretrained_weights/mobilenetv2_1.0-f2a8633.pth.tar'
+    # 获取当前文件路径
+    current_file = os.path.abspath(__file__)
+    # 获取所在目录路径
+    current_directory = os.path.dirname(current_file)
+    # 获取上一级目录路径
+    parent_directory = os.path.dirname(current_directory)
+    pretrained_model_path = parent_directory + '/pretrained_weights/mobilenetv2_1.0-f2a8633.pth.tar'
     print(pretrained_model_path)
     state_dict = torch.load(pretrained_model_path)
     model.load_state_dict(state_dict)
