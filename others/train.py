@@ -244,7 +244,14 @@ def my_train(model, train_dataloader, val_dataloader, device, record):
                                           str(params['frame_sample_rate']) + "_checkpoint" + ".pth.tar")
                 utils.save_checkpoint(model, optimizer, checkpoint)
                 best_acc = val_acc
-                save_path = os.path.join(model_save_dir, args.base_model + args.is_detector_classify + ".pth")
+
+                # 获取当前文件路径
+                current_file = os.path.abspath(__file__)
+                # 获取所在目录路径
+                current_directory = os.path.dirname(current_file)
+                # 获取上一级目录路径
+                parent_directory = os.path.dirname(current_directory)
+                save_path = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + ".pth")
                 torch.save(model, save_path)
 
 

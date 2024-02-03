@@ -22,10 +22,18 @@ from copy import copy
 from tqdm import tqdm
 from PIL import Image
 import torchvision.transforms.functional as TF
+
+# 获取当前文件路径
+current_file = os.path.abspath(__file__)
+# 获取所在目录路径
+current_directory = os.path.dirname(current_file)
+# 获取上一级目录路径
+parent_directory = os.path.dirname(current_directory)
+print("----------------------------, : ", os.path.dirname(parent_directory))
 # # label files stored path
-label_path = '/root/autodl-tmp/EgoGesture/labels-final-revised1'
+label_path = os.path.dirname(parent_directory) + '/EgoGesture/labels-final-revised1'
 # # frame files stored path
-frame_path = '/root/autodl-tmp/EgoGesture/frames'
+frame_path = os.path.dirname(parent_directory) + '/EgoGesture/frames'
 
 
 
@@ -136,7 +144,6 @@ def construct_annot(save_path, mode):
                     annot_dict['rgb'].append(rgb)
                     annot_dict['depth'].append(depth)
                     annot_dict['label'].append(int(label)-1)
-        break
     annot_df = pd.DataFrame(annot_dict)
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     annot_df.to_pickle(save_file)
