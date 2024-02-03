@@ -33,13 +33,12 @@ def construct_detect_annot(save_path, mode):
     annot_dict = {k: [] for k in ['rgb', 'depth', 'label']}
 
     dectct_dict = {k: [] for k in ['dectect', 'label']}
-    if mode == 'detect_train':
+    if mode == 'dectect_train':
         sub_ids = [3, 4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 44, 45,
                    46, 48, 49, 50, 2, 9, 11, 14, 18, 19, 28, 31, 41, 47]
-    elif mode == 'detect_val':
+    elif mode == 'dectect_val':
         sub_ids = [1, 7, 12, 13, 24, 29, 33, 34, 35, 37]
 
-    sub_ids = [i for i in range(1, 51)]
     for sub_i in tqdm(sub_ids):
         frame_path_sub = os.path.join(frame_path, 'Subject{:02}'.format(sub_i))
         label_path_sub = os.path.join(label_path, 'subject{:02}'.format(sub_i))
@@ -83,7 +82,7 @@ def construct_detect_annot(save_path, mode):
                     annot_dict['label'].append(int(label)-1)
 
     dectect_df = pd.DataFrame(dectct_dict)
-    print("len(dectect_df) : ", len(dectect_df))
+    print(len(dectect_df))
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     dectect_df.to_pickle(save_file)
 
@@ -137,22 +136,10 @@ def construct_annot(save_path, mode):
                     annot_dict['rgb'].append(rgb)
                     annot_dict['depth'].append(depth)
                     annot_dict['label'].append(int(label)-1)
+        break
     annot_df = pd.DataFrame(annot_dict)
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     annot_df.to_pickle(save_file)
-
-
-save_path = '/root/autodl-tmp/MRC-Net/data/EgoGesture_annotation'
-# if not os.path.exists(save_path):
-#     os.mkdir(save_path)
-construct_detect_annot(save_path, 'detect_val')
-construct_detect_annot(save_path, 'detect_train')
-
-# if args.if_need_load_dataset == True:
-#     construct_annot(save_path, 'train')
-#     construct_annot(save_path, 'val')
-#     construct_annot(save_path, 'test')
-#     construct_annot(save_path, 'train_plus_val')
 
 
 
@@ -256,4 +243,17 @@ class dataset_video_inference(Dataset):
         return int(self.sample_num)
 
 
+# 获取当前文件路径
+current_file = os.path.abspath(__file__)
+# 获取所在目录路径
+current_directory = os.path.dirname(current_file)
 
+save_path = current_directory + '/EgoGesture_annotation'
+if not os.path.exists(save_path):
+    os.mkdir(save_path)
+# construct_detect_annot(save_path, 'dectect_val')
+# construct_detect_annot(save_path, 'dectect_train')
+construct_annot(save_path, 'train')
+construct_annot(save_path, 'val')
+construct_annot(save_path, 'test')
+construct_annot(save_path, 'train_plus_val')
