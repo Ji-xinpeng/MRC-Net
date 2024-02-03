@@ -256,11 +256,11 @@ current_file = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file)
 
 save_path = current_directory + '/EgoGesture_annotation'
-if not os.path.exists(save_path):
-    os.mkdir(save_path)
-construct_detect_annot(save_path, 'dectect_val')
-construct_detect_annot(save_path, 'dectect_train')
-construct_annot(save_path, 'train')
-construct_annot(save_path, 'val')
-construct_annot(save_path, 'test')
-construct_annot(save_path, 'train_plus_val')
+# if not os.path.exists(save_path):
+#     os.mkdir(save_path)
+# construct_detect_annot(save_path, 'dectect_val')
+# construct_detect_annot(save_path, 'dectect_train')
+# construct_annot(save_path, 'train')
+# construct_annot(save_path, 'val')
+# construct_annot(save_path, 'test')
+# construct_annot(save_path, 'train_plus_val')
