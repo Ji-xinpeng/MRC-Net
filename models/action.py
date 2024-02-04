@@ -59,18 +59,72 @@ class Action(nn.Module):
         x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
         x_shift = x_shift.contiguous().view(nt, c, h, w)
 
-        # x_p1 = self.mychannelblock(x_shift)
-        # x_p1 = x_p1 * x_shift + x_shift
+        x_p1 = self.mychannelblock(x_shift)
+        x_p1 = x_p1 * x_shift + x_shift
 
         # x_p2 = self.my2Dblock(x_shift)
         # x_p2 = x_p2 * x_shift + x_shift
 
-        x_p1 = self.mychannelblock(x_shift)
-        x_p2 = self.my2Dblock(x_shift)
-
-        out = self.net(x_p1 * x_shift + x_p2 * x_shift)
+        out = self.net(x_p1)
         return out
 
+
+class Action2(nn.Module):
+    def __init__(self, net, n_segment=3, shift_div=8):
+        super(Action2, self).__init__()
+        self.net = net
+        self.n_segment = n_segment
+        self.in_channels = self.net.in_channels
+        self.out_channels = self.net.out_channels
+        self.kernel_size = self.net.kernel_size
+        self.stride = self.net.stride
+        self.padding = self.net.padding
+        self.reduced_channels = self.in_channels // 16
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
+        self.fold = self.in_channels // shift_div
+
+        # shifting
+        self.action_shift = nn.Conv1d(
+            self.in_channels, self.in_channels,
+            kernel_size=3, padding=1, groups=self.in_channels,
+            bias=False)
+        self.action_shift.weight.requires_grad = True
+        self.action_shift.weight.data.zero_()
+        self.action_shift.weight.data[:self.fold, 0, 2] = 1  # shift left
+        self.action_shift.weight.data[self.fold: 2 * self.fold, 0, 0] = 1  # shift right
+
+        if 2 * self.fold < self.in_channels:
+            self.action_shift.weight.data[2 * self.fold:, 0, 1] = 1  # fixed
+
+        print('=> Using ACTION')
+        self.my2Dblock = My2DBlock(self.in_channels)
+        # self.my3Dblock = My3DBlock(self.in_channels)
+        self.mychannelblock = MyChannelBlock(self.in_channels)
+
+
+    def forward(self, x):
+        nt, c, h, w = x.size()
+        n_batch = nt // self.n_segment
+
+        x_shift = x.view(n_batch, self.n_segment, c, h, w)
+        x_shift = x_shift.permute([0, 3, 4, 2, 1])  # (n_batch, h, w, c, n_segment)
+        x_shift = x_shift.contiguous().view(n_batch * h * w, c, self.n_segment)
+        x_shift = self.action_shift(x_shift)  # (n_batch*h*w, c, n_segment)
+        x_shift = x_shift.view(n_batch, h, w, c, self.n_segment)
+        x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
+        x_shift = x_shift.contiguous().view(nt, c, h, w)
+
+        # x_p1 = self.mychannelblock(x_shift)
+        # x_p1 = x_p1 * x_shift + x_shift
+
+        x_p2 = self.my2Dblock(x_shift)
+        x_p2 = x_p2 * x_shift + x_shift
+
+        out = self.net(x_p2)
+        return out
+    
 
 class TemporalPool(nn.Module):
     def __init__(self, net, n_segment):
