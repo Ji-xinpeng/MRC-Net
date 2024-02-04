@@ -52,6 +52,7 @@ def train(model, train_dataloader, epoch, criterion, optimizer, writer, device, 
     top5 = AverageMeter()
 
     model.train()
+    model.cuda()
     end = time.time()
     for step, inputs in enumerate(train_dataloader):
         data_time.update(time.time() - end)

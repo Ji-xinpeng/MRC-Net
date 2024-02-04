@@ -25,14 +25,13 @@ class MyChannelBlock(nn.Module):
         x_p2 = x_p2.to(x.device)
         x_p2 = x_p2.permute(0, 2, 1)  # n , c , t
 
-        # x_change = torch.roll(x_p2, shifts=args.begin_split, dims=2)
-        # x_change = x_change + x_p2
+        x_change = torch.roll(x_p2, shifts=args.begin_split, dims=2)
+        x_change = x_change + x_p2
 
-        x_out = self.channel_aaten(x_p2)
+        x_out = self.channel_aaten(x_change)
 
         x_out = x_out.permute(0, 2, 1).view(n_batch, args.clip_len, c, 1, 1)
         x_out = x_out.reshape(nt, c, h, w).contiguous()
-        # x_out = self.sigmoid(x_out)
-        # x_out = self.relu(x_out)
+        x_out = self.sigmoid(x_out)
 
         return x_out

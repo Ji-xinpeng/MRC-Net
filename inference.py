@@ -40,9 +40,11 @@ class Inference:
         pass
 
     def inference(self):
+        self.model_classify.cuda()
         self.model_classify.eval()
         # 加载处理自己的数据
         val_dataloader = self._load_dataloader() 
+        val_dataloader.cuda()
         print("模型所在设备:", next(self.model_classify.parameters()).device)
         print("张量所在设备:", val_dataloader[0].device)
         with torch.no_grad():
@@ -60,7 +62,7 @@ class Inference:
 current_file = os.path.abspath(__file__)
 # 获取所在目录路径
 current_directory = os.path.dirname(current_file)
-checkpoint_path = current_directory + '/weights/mobilenetv2classify.pth'
+checkpoint_path = current_directory + '/weights/mobilenetv2classifycpu.pth'
 
 # 把这个地址换成自己要推理的视频帧所在文件夹的地址
 annot_path = current_directory + "/data/EgoGesture_annotation" 

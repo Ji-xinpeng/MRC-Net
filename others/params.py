@@ -11,7 +11,7 @@ def parse_opts():
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=28)
+    parser.add_argument('--batch_size', type=int, default=30)
     parser.add_argument('--num_workers', type=int, default=36)
     parser.add_argument('--clip_len', type=int, default=8)
 

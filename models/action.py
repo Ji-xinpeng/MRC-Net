@@ -67,9 +67,8 @@ class Action(nn.Module):
 
         x_p1 = self.mychannelblock(x_shift)
         x_p2 = self.my2Dblock(x_shift)
-        x_p1 = x_p1 * x_p2 * x_shift + x_shift
 
-        out = self.net(x_p1)
+        out = self.net(x_p1 * x_shift + x_p2 * x_shift)
         return out
 
 
