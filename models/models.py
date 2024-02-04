@@ -165,6 +165,7 @@ class TSN(nn.Module):
             if self.is_shift:   
                 from models.action import Action
                 for m in self.base_model.modules():
+                    print("-----------------------------------------------   m  : ", m)
                     if isinstance(m, InvertedResidual) and len(m.conv) == 8 and m.use_res_connect:
                         m.conv[0] = Action(m.conv[0], n_segment=self.num_segments, shift_div=self.shift_div)           
 

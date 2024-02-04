@@ -38,7 +38,6 @@ frame_path = os.path.dirname(parent_directory) + '/EgoGesture/frames'
 
 
 def construct_detect_annot(save_path, mode):
-    annot_dict = {k: [] for k in ['rgb', 'depth', 'label']}
 
     dectct_dict = {k: [] for k in ['dectect', 'label']}
     if mode == 'dectect_train':
@@ -86,8 +85,6 @@ def construct_detect_annot(save_path, mode):
                         dectct_dict['dectect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(dec)))
                         dectct_dict['label'].append(0)
                     dectct_start = int(data_note.values[data_i, 2])
-                    annot_dict['rgb'].append(rgb)
-                    annot_dict['label'].append(int(label)-1)
 
     dectect_df = pd.DataFrame(dectct_dict)
     print(len(dectect_df))
