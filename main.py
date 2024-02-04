@@ -41,6 +41,7 @@ if args.is_detector_classify == "classify":
         model_dict.update(pretrained_dict)
         model.load_state_dict(model_dict)
     policies = None
+    input_data_shape = (8, 3, 224, 224)
 else:
     train_dataloader, val_dataloader = get_dectect_dataloader()
     print("--------------------------------- dectect train -------------------------------")
@@ -50,10 +51,11 @@ else:
     num_ftrs = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(num_ftrs, 2)
     policies = get_dectect_model_policies(model)
+    input_data_shape = (3, 224, 224)
 
 # 计算模型参数数量
-# print("模型的参数量:", sum(p.numel() for p in model.parameters()))
-# summary(model, (1, 3, 224, 224), device="cpu")
+print("模型的参数量:", sum(p.numel() for p in model.parameters()))
+summary(model, input_data_shape, device="cpu")
 
 
 my_train(model, train_dataloader, val_dataloader, device, record, policies)

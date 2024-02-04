@@ -89,8 +89,8 @@ params['learning_rate'] = args.lr
 
 if args.is_detector_classify == "detect":
     params['batch_size'] = args.batch_size * 8
-    args.lr_steps = [4, 8]
-    params['epoch_num'] = 10
+    args.lr_steps = [1, 2]
+    params['epoch_num'] = 3
 
 params['momentum'] = 0.9
 params['weight_decay'] = args.weight_decay
