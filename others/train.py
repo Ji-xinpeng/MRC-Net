@@ -7,6 +7,7 @@ from tqdm import tqdm, trange
 from tensorboardX import SummaryWriter
 from torch.nn.utils import clip_grad_norm_
 from others.record import *
+import torch.nn.functional as F
 
 
 class AverageMeter(object):
@@ -27,12 +28,11 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
+
     maxk = max(topk)
     batch_size = target.size(0)
-
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
     correct = pred.eq(target.view(1, -1).expand_as(pred))
@@ -42,6 +42,9 @@ def accuracy(output, target, topk=(1,)):
         correct_k = correct[:k].reshape(-1).float().sum(0)
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
+
+def dectect_accuary(output, target):
+    pass
 
 
 def train(model, train_dataloader, epoch, criterion, optimizer, writer, device, record):
@@ -71,7 +74,10 @@ def train(model, train_dataloader, epoch, criterion, optimizer, writer, device, 
         labels = labels.to(device, non_blocking=True).long()
         loss = criterion(outputs, labels)
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(outputs.data, labels, topk=(1, 5))
+        if args.is_detector_classify == "classify":
+            prec1, prec5 = accuracy(outputs.data, labels, topk=(1, 5))
+        else:
+            prec1, prec5 = accuracy(outputs.data, labels, topk=(1, 1))
         losses.update(loss.item(), labels.size(0))
         top1.update(prec1.item(), labels.size(0))
         top5.update(prec5.item(), labels.size(0))
@@ -206,13 +212,14 @@ def testing(model, val_dataloader, criterion, device):
     print(print_string)
 
 
-def my_train(model, train_dataloader, val_dataloader, device, record):
+def my_train(model, train_dataloader, val_dataloader, device, record, policies=None):
     cur_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
     best_acc = 0.
     best_acc_top5 = 0.
 
     criterion = nn.CrossEntropyLoss().to(device)
-    policies = model.get_optim_policies()
+    if policies == None:
+        policies = model.get_optim_policies()
     model = nn.DataParallel(model)  # multi-Gpu
     model = model.to(device)
     model.cuda()

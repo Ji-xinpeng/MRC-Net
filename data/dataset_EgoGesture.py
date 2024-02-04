@@ -29,7 +29,7 @@ current_file = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file)
 # 获取上一级目录路径
 parent_directory = os.path.dirname(current_directory)
-print("----------------------------, : ", os.path.dirname(parent_directory))
+
 # # label files stored path
 label_path = os.path.dirname(parent_directory) + '/EgoGesture/labels-final-revised1'
 # # frame files stored path
@@ -70,8 +70,8 @@ def construct_detect_annot(save_path, mode):
                 data_note = pd.read_csv(label_path_group, names=['class', 'start', 'end'])
                 data_note = data_note[np.isnan(data_note['start']) == False]
 
-                dectct_start = 0
-                dectect_end = 0
+                dectct_start = 1
+                dectect_end = 1
 
                 for data_i in range(data_note.values.shape[0]):
                     label = data_note.values[data_i, 0]

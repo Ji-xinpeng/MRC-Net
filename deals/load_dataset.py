@@ -21,8 +21,7 @@ parent_directory = os.path.dirname(current_directory)
 
 annot_path = parent_directory + '/data/{}_annotation'.format(args.dataset)
 label_path = os.path.dirname(parent_directory) + '/{}/'.format(args.dataset) # for submitting testing results
-print("--------------------------------------------annot_path-, : ", annot_path)
-print("--------------------------------------------parent_directory-, : ", label_path)
+
 
 def load_dataset():
     seed = 1

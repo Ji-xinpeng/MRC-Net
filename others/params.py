@@ -46,7 +46,7 @@ def parse_opts():
     parser.add_argument('--if_need_load_dataset', default=False, type=str)  #
     parser.add_argument('--begin_split', default=1, type=str)  # my_block
     parser.add_argument('--if_get_data_and_label', default=True, type=str)
-    parser.add_argument('--is_detector_classify', default="classify", type=str)
+    parser.add_argument('--is_detector_classify', default="detect", type=str) # classify detect
 
     args = parser.parse_args()
     return args
@@ -86,6 +86,12 @@ params['epoch_num'] = args.epochs
 params['batch_size'] = args.batch_size
 params['num_workers'] = args.num_workers
 params['learning_rate'] = args.lr
+
+if args.is_detector_classify == "detect":
+    params['batch_size'] = args.batch_size * 8
+    args.lr_steps = [4, 8]
+    params['epoch_num'] = 10
+
 params['momentum'] = 0.9
 params['weight_decay'] = args.weight_decay
 params['display'] = 100
