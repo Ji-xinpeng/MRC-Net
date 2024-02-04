@@ -138,7 +138,10 @@ def validation(model, val_dataloader, epoch, criterion, optimizer, writer, devic
             loss = criterion(outputs, labels)
 
             # measure accuracy and record loss
-            prec1, prec5 = accuracy(outputs.data, labels, topk=(1, 5))
+            if args.is_detector_classify == "classify":
+                prec1, prec5 = accuracy(outputs.data, labels, topk=(1, 5))
+            else:
+                prec1, prec5 = accuracy(outputs.data, labels, topk=(1, 1))
             losses.update(loss.item(), labels.size(0))
             top1.update(prec1.item(), labels.size(0))
             top5.update(prec5.item(), labels.size(0))
