@@ -1,4 +1,5 @@
 import os
+import subprocess
 import torch.nn.functional as F
 from others.train import *
 from models.models import *
@@ -15,9 +16,13 @@ checkpoint_path = current_directory + '/weights/mobilenetv2classify.pth'
 # 把这个地址换成自己要推理的视频帧所在文件夹的地址
 annot_path = current_directory + "/data/EgoGesture_annotation" 
 
-inference = Inference(checkpoint_path_classify=checkpoint_path,
-                      checkpoint_path_dectet=checkpoint_path,
-                      annot_path=annot_path)
+inference = InferenceClassify(checkpoint_path_classify=checkpoint_path, annot_path=annot_path)
 
-result = inference.inference()
+inference.load_dataloader()
+result = inference.inference_pth()
+result = inference.inference_onnx()
 
+# command = "trtexec --onnx=/root/autodl-tmp/MRC-Net/weights/mobilenetv2classify.onnx \
+#           --saveEngine=/root/autodl-tmp/MRC-Net/weights/mobilenetv2classify.trt --explicitBatch"
+# t = subprocess.run(command, shell=True, capture_output=True, text=True)
+# print(t.stdout)

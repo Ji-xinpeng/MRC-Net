@@ -3,7 +3,7 @@ import sys
 import onnx
 from pathlib import Path
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.optim as optim
 import torch.onnx
 import torchvision.transforms as transforms
@@ -19,12 +19,10 @@ from inference_utils.load_inference_data import *
 class ConvertToONNX:
     def __init__(self, pth_path: str) -> None:
         self.pth_path = pth_path
-        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.x = torch.randn(1, 8, 3, 224, 224)     
 
     def _convert_to_onnx_prepare(self):
-        self.model.eval().to(self.device)
-        self.x.to(self.device)
+        self.model.eval()
         output = self.model(self.x)
         print("convert to onnx : ", output.shape)
 
@@ -40,14 +38,16 @@ class ConvertToONNX:
         print("onnx has been saved to : ", self._get_onnx_save_path())
 
     def convert_to_onnx(self):
-        self.model = torch.load(self.pth_path)
+        self.model = torch.load(self.pth_path, map_location=torch.device("cpu"))
         with torch.no_grad():
             torch.onnx.export(
                 self.model,
                 self.x,
                 self._get_onnx_save_path(),
+                opset_version = 12,
                 input_names = ['input'],
-                output_names = ['output']
+                output_names = ['output'],
+                verbose='True'
             )
         self._check_onnx_is_succesful()
 

@@ -24,27 +24,20 @@ def load_checkpoint(save_dir, filename):
     checkpoint = torch.load(os.path.join(save_dir, filename), map_location='cpu')
     return checkpoint
 
-def save_checkpoint(net, optimizer, filename):
-    checkpoint = {
-            'state_dict': net.module.state_dict(),
-            'optimizer' : optimizer.state_dict()
-            }
-    torch.save(checkpoint, filename)
-
-
-# def save_checkpoint(net, filename):
+# def save_checkpoint(net, optimizer, filename):
 #     checkpoint = {
-#             'state_dict': net.module.state_dict()
+#             'state_dict': net.module.state_dict(),
+#             'optimizer' : optimizer.state_dict()
 #             }
 #     torch.save(checkpoint, filename)
 
 
-# def save_checkpoint(net, optimizer, scheduler, filename):
-#     checkpoint = {
-#             'state_dict': net.module.state_dict(),
-#             'optimizer' : optimizer.state_dict(),
-#             'scheduler': scheduler.state_dict()}
-#     torch.save(checkpoint, filename)
+def save_checkpoint(net, optimizer, filename):
+    checkpoint = {
+            'state_dict': net.state_dict(),
+            'optimizer' : optimizer.state_dict()
+            }
+    torch.save(checkpoint, filename)
 
 
 
