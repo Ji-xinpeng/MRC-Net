@@ -4,7 +4,6 @@ from others.train import *
 from models.models import *
 from others.params import *
 from deals.load_dataset import * 
-from inference_utils.utils import *
 
 def load_dataloader(annot_path):
     input_mean = [.485, .456, .406]

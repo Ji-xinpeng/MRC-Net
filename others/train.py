@@ -253,11 +253,8 @@ def my_train(model, train_dataloader, val_dataloader, device, record):
                 # 获取上一级目录路径
                 parent_directory = os.path.dirname(current_directory)
 
-                save_path_gpu = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + 'gpu' + ".pth")
+                save_path_gpu = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + ".pth")
                 torch.save(model, save_path_gpu)
-                cpu_model = model.to('cpu')
-                save_path_cpu = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + 'cpu' + ".pth")
-                torch.save(cpu_model, save_path_cpu)
 
 
             if top5_acc > best_acc_top5:
