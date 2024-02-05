@@ -28,10 +28,6 @@ class Inference:
         self.checkpoint_path_detect = checkpoint_path_detect
         self.model_classify = torch.load(checkpoint_path_classify, map_location=torch.device("cpu")) 
         self.model_detect = torch.load(checkpoint_path_detect, map_location=torch.device("cpu")) 
-        self.model_detect.cuda()
-        self.model_detect.eval()
-        self.model_classify.cuda()
-        self.model_classify.eval()
         self.onnxruntime = None
         self.onnxruntime_detect= None
         self.frames = []
@@ -40,7 +36,22 @@ class Inference:
         self.spatial_transform = None
         self.temporal_transform_test = None
         self._get_spatial_temporal()
-        self._build_onnxruntime()
+        # self._build_onnxruntime()
+        self._is_gpu_available()
+
+
+    def _is_gpu_available(self):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model_detect = self.model_detect.to(device)
+        self.model_classify = self.model_classify.to(device)
+        if device.type == 'cuda':
+            self.model_detect.cuda()
+            self.model_classify.cuda()
+        else:
+            self.model_detect = self.model_detect.module
+            self.model_classify = self.model_classify.module
+        self.model_detect.eval()
+        self.model_classify.eval()
 
 
     def _get_onnx_path(self, checkpoint_path):
@@ -94,8 +105,8 @@ class Inference:
     
     def inference_detect_pth(self, image: torch.Tensor):
         start_time = time.perf_counter()
-        # print("模型所在设备:", next(self.model_detect.parameters()).device)
-        # print("张量所在设备:", self.val_dataloader.device)
+        print("模型所在设备:", next(self.model_detect.parameters()).device)
+        print("张量所在设备:", self.val_dataloader.device)
         with torch.no_grad():
             image = self._preprocess_image(image)
             outputs = self.model_detect(image)
