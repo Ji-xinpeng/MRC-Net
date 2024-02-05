@@ -4,7 +4,7 @@ import time
 from PIL import Image
 import mediapipe as mp
 from inference_utils.inference_class import Inference
-
+from human_machine_system.tello import TelloController
 
 class InteractivaSystem:
     def __init__(self) -> None:
@@ -14,6 +14,11 @@ class InteractivaSystem:
         self._init_inference_model()
         self._init_mediapipe()
         self._init_varbile()
+        self.tello = TelloController()
+
+    def _init_tello(self):
+        self.tello = TelloController()
+        # self.tello.tello_connect()
 
     def _parse_weights_path(self):
         current_file = os.path.abspath(__file__)
@@ -60,7 +65,10 @@ class InteractivaSystem:
             self.inference.need_classify_video.append(rgb_cache)
         elif detect_result == 0 and self.last_detect_result == 1 and len(self.inference.need_classify_video) > 8:
             print("----------------------------- classify -----------------------------")
-            self.inference.inference_pth()
+            # 进行手势识别推理
+            command = self.inference.inference_pth()
+            # 控制无人机
+            self.tello.control(command, self.mp_results)
             self.inference.need_classify_video = []
         self.last_detect_result = detect_result
 
