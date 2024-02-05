@@ -20,19 +20,22 @@ from others.params import *
 from deals.load_dataset import * 
 from inference_utils.load_inference_data import *
 
-class InferenceClassify:
+class Inference:
     def __init__(self, checkpoint_path_classify: str,
+                 checkpoint_path_detect: str,
                  annot_path: str) -> None:
         self.model_classify = torch.load(checkpoint_path_classify, map_location=torch.device("cpu")) 
+        self.model_detect = torch.load(checkpoint_path_detect, map_location=torch.device("cpu")) 
         self.onnxruntime = None
         self.frames = []
         self.annot_path = annot_path
         self.checkpoint_path_classify = checkpoint_path_classify
+        self.checkpoint_path_detect = checkpoint_path_detect
         self.val_dataloader = None
         self._build_onnxruntime()
 
-    def _get_onnx_path(self):
-        onnx_path = self.checkpoint_path_classify.split('.')[0] + '.onnx'
+    def _get_onnx_path(self, checkpoint_path):
+        onnx_path = checkpoint_path.split('.')[0] + '.onnx'
         return onnx_path
 
     def load_dataloader(self):

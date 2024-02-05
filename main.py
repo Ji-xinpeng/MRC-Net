@@ -4,7 +4,7 @@ from others.train import *
 from torchsummary import summary
 from models.models import *
 import h5py
-from dectect_utils.dectect_utils import *
+from detect_utils.detect_utils import *
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_id
@@ -43,14 +43,14 @@ if args.is_detector_classify == "classify":
     policies = None
     input_data_shape = (8, 3, 224, 224)
 else:
-    train_dataloader, val_dataloader = get_dectect_dataloader()
-    print("--------------------------------- dectect train -------------------------------")
+    train_dataloader, val_dataloader = get_detect_dataloader()
+    print("--------------------------------- detect train -------------------------------")
     from torchvision.models import mobilenet_v2 as mobilenet_v2
     model = mobilenet_v2(pretrained=True)
     # 修改分类器以适应自己的数据集
     num_ftrs = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(num_ftrs, 2)
-    policies = get_dectect_model_policies(model)
+    policies = get_detect_model_policies(model)
     input_data_shape = (3, 224, 224)
 
 # 计算模型参数数量

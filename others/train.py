@@ -43,7 +43,7 @@ def accuracy(output, target, topk=(1,)):
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
-def dectect_accuary(output, target):
+def detect_accuary(output, target):
     pass
 
 

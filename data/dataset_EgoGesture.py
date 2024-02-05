@@ -39,11 +39,11 @@ frame_path = os.path.dirname(parent_directory) + '/EgoGesture/frames'
 
 def construct_detect_annot(save_path, mode):
 
-    dectct_dict = {k: [] for k in ['dectect', 'label']}
-    if mode == 'dectect_train':
+    dectct_dict = {k: [] for k in ['detect', 'label']}
+    if mode == 'detect_train':
         sub_ids = [3, 4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 44, 45,
                    46, 48, 49, 50, 2, 9, 11, 14, 18, 19, 28, 31, 41, 47]
-    elif mode == 'dectect_val':
+    elif mode == 'detect_val':
         sub_ids = [1, 7, 12, 13, 24, 29, 33, 34, 35, 37]
 
     for sub_i in tqdm(sub_ids):
@@ -71,25 +71,25 @@ def construct_detect_annot(save_path, mode):
                 data_note = data_note[np.isnan(data_note['start']) == False]
 
                 dectct_start = 1
-                dectect_end = 1
+                detect_end = 1
 
                 for data_i in range(data_note.values.shape[0]):
                     label = data_note.values[data_i, 0]
                     rgb = []
-                    dectect_end = int(data_note.values[data_i, 1])
+                    detect_end = int(data_note.values[data_i, 1])
                     for img_ind in range(int(data_note.values[data_i, 1]), int(data_note.values[data_i, 2] - 1)):
                         rgb.append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
-                        dectct_dict['dectect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
+                        dectct_dict['detect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
                         dectct_dict['label'].append(1)
-                    for dec in range(dectct_start, dectect_end):
-                        dectct_dict['dectect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(dec)))
+                    for dec in range(dectct_start, detect_end):
+                        dectct_dict['detect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(dec)))
                         dectct_dict['label'].append(0)
                     dectct_start = int(data_note.values[data_i, 2])
 
-    dectect_df = pd.DataFrame(dectct_dict)
-    print(len(dectect_df))
+    detect_df = pd.DataFrame(dectct_dict)
+    print(len(detect_df))
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
-    dectect_df.to_pickle(save_file)
+    detect_df.to_pickle(save_file)
 
     
 
@@ -255,8 +255,8 @@ current_directory = os.path.dirname(current_file)
 save_path = current_directory + '/EgoGesture_annotation'
 # if not os.path.exists(save_path):
 #     os.mkdir(save_path)
-# construct_detect_annot(save_path, 'dectect_val')
-# construct_detect_annot(save_path, 'dectect_train')
+# construct_detect_annot(save_path, 'detect_val')
+# construct_detect_annot(save_path, 'detect_train')
 # construct_annot(save_path, 'train')
 # construct_annot(save_path, 'val')
 # construct_annot(save_path, 'test')

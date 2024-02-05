@@ -17,40 +17,32 @@ from inference_utils.load_inference_data import *
 
 
 class ConvertToONNX:
-    def __init__(self, pth_path: str) -> None:
-        self.pth_path = pth_path
-        self.x = torch.randn(1, 8, 3, 224, 224)     
+    def __init__(self) -> None:
+        self.x = None    
+        self.model = None 
 
-    def _convert_to_onnx_prepare(self):
-        self.model.eval()
-        output = self.model(self.x)
-        print("convert to onnx : ", output.shape)
-
-    def _get_onnx_save_path(self):
-        print("-------------------- pth_path : ", self.pth_path)
-        onnx_path = self.pth_path.split('.')[0] + ".onnx"
+    def _get_onnx_save_path(self, pth_path):
+        print("-------------------- pth_path : ", pth_path)
+        onnx_path = pth_path.split('.')[0] + ".onnx"
         print("-------------------- onnx_path : ", onnx_path)
         return onnx_path
     
-    def _check_onnx_is_succesful(self):
-        onnx_model = onnx.load(self._get_onnx_save_path())
+    def _check_onnx_is_succesful(self, pth_path):
+        onnx_model = onnx.load(self._get_onnx_save_path(pth_path))
         onnx.checker.check_model(onnx_model)
-        print("onnx has been saved to : ", self._get_onnx_save_path())
+        print("onnx has been saved to : ", self._get_onnx_save_path(pth_path))
 
-    def convert_to_onnx(self):
-        self.model = torch.load(self.pth_path, map_location=torch.device("cpu"))
+    def convert_to_onnx(self, pth_path: str, shape: tuple):
+        self.model = torch.load(pth_path, map_location=torch.device("cpu"))
+        self.x = torch.randn(shape)
         with torch.no_grad():
             torch.onnx.export(
-                self.model,
+                self.model.module,
                 self.x,
-                self._get_onnx_save_path(),
+                self._get_onnx_save_path(pth_path),
                 opset_version = 12,
                 input_names = ['input'],
                 output_names = ['output'],
                 verbose='True'
             )
-        self._check_onnx_is_succesful()
-
-
-convert = ConvertToONNX('/root/autodl-tmp/MRC-Net/weights/mobilenetv2classify.pth')
-convert.convert_to_onnx()
+        self._check_onnx_is_succesful(pth_path)
