@@ -30,11 +30,12 @@ if not files:
 annot_path = current_directory + "/data/EgoGesture_annotation" 
 
 inference = Inference(checkpoint_path_classify = checkpoint_path_classify, 
-                      checkpoint_path_detect = checkpoint_path_detect,
-                      annot_path = annot_path)
+                      checkpoint_path_detect = checkpoint_path_detect)
 
-inference.load_dataloader()
+# inference.load_dataloader()
 # result = inference.inference_pth()
 # result = inference.inference_onnx()
-image = Image.open('/root/autodl-tmp/MRC-Net/test_data/u=2790304584,1258411054&fm=253&fmt=auto&app=120&f=JPEG.webp').convert("RGB")
-detect_result = inference.inference_detect_pth(image)
+# image = Image.open('C:/Users/ji/Desktop/MRC-Net/test_data/u=325784059,3802711583&fm=253&fmt=auto&app=138&f=JPEG.webp').convert("RGB")
+# detect_result = inference.inference_detect_pth(image)
+
+inference.capture_run()

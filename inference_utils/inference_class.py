@@ -5,10 +5,12 @@ from pathlib import Path
 import onnxruntime
 import time
 import numpy as np
-import tensorrt as trt
+import cv2
+from PIL import Image
+# import tensorrt as trt
  
 # logger to capture errors, warnings, and other information during the build and inference phases
-TRT_LOGGER = trt.Logger()
+# TRT_LOGGER = trt.Logger()
 
 # 获取当前文件所在目录的上两级目录的路径
 two_up = Path(__file__).resolve().parents[1]
@@ -22,8 +24,7 @@ from inference_utils.load_inference_data import *
 
 class Inference:
     def __init__(self, checkpoint_path_classify: str,
-                 checkpoint_path_detect: str,
-                 annot_path: str) -> None:
+                 checkpoint_path_detect: str) -> None:
         self.checkpoint_path_classify = checkpoint_path_classify
         self.checkpoint_path_detect = checkpoint_path_detect
         self.model_classify = torch.load(checkpoint_path_classify, map_location=torch.device("cpu")) 
@@ -31,13 +32,45 @@ class Inference:
         self.onnxruntime = None
         self.onnxruntime_detect= None
         self.frames = []
-        self.annot_path = annot_path
         self.val_dataloader = None
         self.spatial_transform = None
         self.temporal_transform_test = None
+        self.need_classify_video = []
         self._get_spatial_temporal()
         # self._build_onnxruntime()
         self._is_gpu_available()
+        self.cap = cv2.VideoCapture(0)
+        self._get_device_info()
+
+
+    def _get_device_info(self):
+        print("摄像头帧率: ", self.cap.get(cv2.CAP_PROP_FPS))
+
+
+    def capture_run(self):
+        if not self.cap.isOpened():
+            raise Exception("Could not open camera.")
+        while True:
+            ret, frame = self.cap.read()
+            if ret:
+                cv2.imshow('frame', frame)
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                rgb_image = Image.fromarray(frame_rgb)
+                rgb_cache = rgb_image.convert("RGB")
+                detect_result = self.inference_detect_pth(rgb_cache)
+                if detect_result == 1:
+                    self.need_classify_video.append(rgb_cache)
+                if detect_result == 0 and len(self.need_classify_video) > 8:
+                    print("----------------------------- classify -----------------")
+                    self.inference_pth()
+                    self.need_classify_video = []
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
+
+    def close(self):
+        self.cap.release()
+        cv2.destroyAllWindows()
 
 
     def _is_gpu_available(self):
@@ -78,35 +111,32 @@ class Inference:
         clip_rgb_frames = self.spatial_transform([image])
         nc, h, w = clip_rgb_frames.size()
         return np.reshape(clip_rgb_frames, (1, nc, h, w))
+    
 
-
-    def load_dataloader(self):
-        inference_data = inference_data_video(self.annot_path, spatial_transform=self.spatial_transform, clip_num = 1,
+    def _load_dataloader(self):
+        inference_data = need_to_classify_video(self.need_classify_video, spatial_transform=self.spatial_transform,
                                                         temporal_transform=self.temporal_transform_test)
-        self.val_dataloader = inference_data.get_inference_data()
+        return inference_data.get_inference_data()
     
 
     def inference_pth(self):
-        start_time = time.perf_counter()
-        # print("模型所在设备:", next(self.model_classify.parameters()).device)
-        # print("张量所在设备:", self.val_dataloader.device)
+        # start_time = time.perf_counter()
         with torch.no_grad():
-            outputs = self.model_classify(self.val_dataloader)
+            outputs = self.model_classify(self._load_dataloader())
+            # outputs = self.model_classify(self.val_dataloader)
             outputs = outputs.view(1, 1, -1)
             outputs = F.softmax(outputs, 2)
             # 找到概率最大值的索引，这就是预测值
             _, predicted_class = torch.max(outputs, 2)
-            print(f'预测的类别是: {predicted_class[0][0]}')
-        end_time = time.perf_counter()
-        execution_time = end_time - start_time
-        print(f"pth 代码运行时间: {execution_time}秒")
+            print(f'\r预测的类别是: {predicted_class[0][0]}', end='')
+        # end_time = time.perf_counter()
+        # execution_time = end_time - start_time
+        # print(f"pth 代码运行时间: {execution_time}秒")
         return int(predicted_class[0][0])
     
     
-    def inference_detect_pth(self, image: torch.Tensor):
-        start_time = time.perf_counter()
-        print("模型所在设备:", next(self.model_detect.parameters()).device)
-        print("张量所在设备:", self.val_dataloader.device)
+    def inference_detect_pth(self, image):
+        # start_time = time.perf_counter()
         with torch.no_grad():
             image = self._preprocess_image(image)
             outputs = self.model_detect(image)
@@ -114,11 +144,11 @@ class Inference:
             outputs = F.softmax(outputs, 1)
             # 找到概率最大值的索引，这就是预测值
             _, predicted_class = torch.max(outputs, 1)
-            print(f'预测的类别是: {predicted_class[0]}')
-        end_time = time.perf_counter()
-        execution_time = end_time - start_time
+            # print(f'\r预测的类别是: {predicted_class[0]}', end='')
+        # end_time = time.perf_counter()
+        # execution_time = end_time - start_time
         # 计算代码运行时间
-        print(f"pth 代码运行时间: {execution_time}秒")
+        # print(f"pth 代码运行时间: {execution_time}秒")
         return int(predicted_class[0])
     
 
@@ -140,9 +170,9 @@ class Inference:
         outputs = torch.tensor(outputs).view(1, 1, -1)
         outputs = F.softmax(outputs, 2)
         _, predicted_class = torch.max(outputs, 2)
-        print(f'onnx 预测的类别是: {predicted_class[0][0]}')
+        print(f'\ronnx 预测的类别是: {predicted_class[0][0]}', end='')
         end_time = time.perf_counter()
         execution_time = end_time - start_time
-        print(f"onnx 代码运行时间: {execution_time}秒")
+        print(f"\ronnx 代码运行时间: {execution_time}秒", end='')
         return int(predicted_class[0][0])
     

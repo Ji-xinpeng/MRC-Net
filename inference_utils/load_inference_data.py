@@ -64,6 +64,28 @@ class inference_data_video(Dataset):
 
 
 
+class need_to_classify_video(Dataset):
+    def __init__(self, rgb_samples, spatial_transform, temporal_transform):
+        self.rgb_samples = rgb_samples
+        self.sample_num = len(self.rgb_samples)
+        self.spatial_transform = spatial_transform
+        self.temporal_transform = temporal_transform
+        self.clip_num = 1
+
+    def get_inference_data(self):
+        indices = [i for i in range(len(self.rgb_samples))]
+        selected_indice = self.temporal_transform(copy(indices))
+        clip_rgb_frames = []
+        for frame_name_i in selected_indice:
+            rgb_cache = self.rgb_samples[frame_name_i]
+            clip_rgb_frames.append(rgb_cache)
+        clip_rgb_frames = self.spatial_transform(clip_rgb_frames)
+        ntc, h, w = clip_rgb_frames.size()
+        clip_rgb_frames = np.reshape(clip_rgb_frames, (1, -1, 3, h, w))
+
+        return clip_rgb_frames
+
+
 def detect_gestures_appear():
     '''隔 帧 检 测'''
     pass
