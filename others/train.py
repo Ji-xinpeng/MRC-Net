@@ -223,7 +223,7 @@ def my_train(model, train_dataloader, val_dataloader, device, record, policies=N
     criterion = nn.CrossEntropyLoss().to(device)
     if policies == None:
         policies = model.get_optim_policies()
-    model = nn.DataParallel(model)  # multi-Gpu
+    # model = nn.DataParallel(model)  # multi-Gpu
     model = model.to(device)
     model.cuda()
     if params['recover_from_checkpoint'] is not None:
