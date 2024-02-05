@@ -38,7 +38,6 @@ frame_path = os.path.dirname(parent_directory) + '/EgoGesture/frames'
 
 
 def construct_detect_annot(save_path, mode):
-
     dectct_dict = {k: [] for k in ['detect', 'label']}
     if mode == 'detect_train':
         sub_ids = [3, 4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 44, 45,
@@ -253,11 +252,11 @@ current_file = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file)
 
 save_path = current_directory + '/EgoGesture_annotation'
-# if not os.path.exists(save_path):
-#     os.mkdir(save_path)
-# construct_detect_annot(save_path, 'detect_val')
-# construct_detect_annot(save_path, 'detect_train')
-# construct_annot(save_path, 'train')
-# construct_annot(save_path, 'val')
-# construct_annot(save_path, 'test')
-# construct_annot(save_path, 'train_plus_val')
+if not os.path.exists(save_path):
+    os.mkdir(save_path)
+    construct_detect_annot(save_path, 'detect_val')
+    construct_detect_annot(save_path, 'detect_train')
+    construct_annot(save_path, 'train')
+    construct_annot(save_path, 'val')
+    construct_annot(save_path, 'test')
+    construct_annot(save_path, 'train_plus_val')

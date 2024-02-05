@@ -1,4 +1,5 @@
 import os
+import glob
 import subprocess
 import torch.nn.functional as F
 from others.train import *
@@ -8,6 +9,7 @@ from deals.load_dataset import *
 from inference_utils.load_inference_data import *
 from inference_utils.inference_class import *
 from inference_utils.convert_to_onnx import *
+from data.dataset_EgoGesture import * 
 
 
 current_file = os.path.abspath(__file__)
@@ -16,9 +18,13 @@ checkpoint_path_classify = current_directory + '/weights/mobilenetv2classify.pth
 checkpoint_path_detect = current_directory + '/weights/mobilenetv2detect.pth'
 
 # 把模型转换成 onnx 格式
-convert = ConvertToONNX()
-convert.convert_to_onnx(checkpoint_path_classify, (1, 8, 3, 224, 224))
-convert.convert_to_onnx(checkpoint_path_detect, (1, 3, 224, 224))
+# 使用glob模块匹配文件夹下以.onnx结尾的文件
+extension = ".onnx"
+files = glob.glob(os.path.join(current_directory + '/weights/', f"*{extension}"))
+if not files:
+    convert = ConvertToONNX()
+    convert.convert_to_onnx(checkpoint_path_classify, (1, 8, 3, 224, 224))
+    convert.convert_to_onnx(checkpoint_path_detect, (1, 3, 224, 224))
 
 # 把这个地址换成自己要推理的视频帧所在文件夹的地址
 annot_path = current_directory + "/data/EgoGesture_annotation" 
@@ -28,10 +34,7 @@ inference = Inference(checkpoint_path_classify = checkpoint_path_classify,
                       annot_path = annot_path)
 
 inference.load_dataloader()
-result = inference.inference_pth()
-result = inference.inference_onnx()
-
-# command = "trtexec --onnx=/root/autodl-tmp/MRC-Net/weights/mobilenetv2classify.onnx \
-#           --saveEngine=/root/autodl-tmp/MRC-Net/weights/mobilenetv2classify.trt --explicitBatch"
-# t = subprocess.run(command, shell=True, capture_output=True, text=True)
-# print(t.stdout)
+# result = inference.inference_pth()
+# result = inference.inference_onnx()
+image = Image.open('/root/autodl-tmp/MRC-Net/test_data/u=2790304584,1258411054&fm=253&fmt=auto&app=120&f=JPEG.webp').convert("RGB")
+detect_result = inference.inference_detect_pth(image)

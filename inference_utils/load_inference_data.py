@@ -63,6 +63,7 @@ class inference_data_video(Dataset):
         return clip_rgb_frames
 
 
+
 def detect_gestures_appear():
     '''隔 帧 检 测'''
     pass
