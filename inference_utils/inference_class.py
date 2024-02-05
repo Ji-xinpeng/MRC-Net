@@ -30,6 +30,8 @@ class Inference:
         self.model_detect = torch.load(checkpoint_path_detect, map_location=torch.device("cpu")) 
         self.model_detect.cuda()
         self.model_detect.eval()
+        self.model_classify.cuda()
+        self.model_classify.eval()
         self.onnxruntime = None
         self.onnxruntime_detect= None
         self.frames = []
@@ -75,8 +77,6 @@ class Inference:
 
     def inference_pth(self):
         start_time = time.perf_counter()
-        self.model_classify.cuda()
-        self.model_classify.eval()
         # print("模型所在设备:", next(self.model_classify.parameters()).device)
         # print("张量所在设备:", self.val_dataloader.device)
         with torch.no_grad():
@@ -121,7 +121,7 @@ class Inference:
         self.onnxruntime = onnxruntime.InferenceSession(self._get_onnx_path(self.checkpoint_path_classify), providers = providers)
         self.onnxruntime_detect = onnxruntime.InferenceSession(self._get_onnx_path(self.checkpoint_path_detect), providers = providers)
     
-    
+
     def inference_onnx(self):
         start_time = time.perf_counter()
         input_name = self.onnxruntime.get_inputs()[0].name
