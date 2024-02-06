@@ -17,7 +17,6 @@ import skimage.util as ski_util
 from sklearn.utils import shuffle
 import math
 from copy import copy
-import cv2
 # from others.params import *
 from tqdm import tqdm
 from PIL import Image
