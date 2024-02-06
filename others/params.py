@@ -41,7 +41,7 @@ def parse_opts():
     parser.add_argument('--pretrained', default='imagenet', type=str)
     parser.add_argument('--use_video_swin_transformer', default=False, type=str)
     parser.add_argument('--change_resnet_head', default=False, type=str)  # 改为 True 就改变 resnet 开头几层网络
-    parser.add_argument('--num_heads', default=1, type=str) # 自注意力机制头数
+    parser.add_argument('--num_heads', default=2, type=str) # 自注意力机制头数
     parser.add_argument('--reduce_num', default=32, type=str)  # my_block 通道减少的数量
     parser.add_argument('--if_need_load_dataset', default=False, type=str)  #
     parser.add_argument('--begin_split', default=1, type=str)  # my_block
