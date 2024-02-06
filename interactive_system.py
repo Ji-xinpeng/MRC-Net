@@ -8,13 +8,12 @@ from human_machine_system.tello import TelloController
 
 class InteractivaSystem:
     def __init__(self) -> None:
-        # 0代表电脑自带的摄像头
-        self.cap = cv2.VideoCapture(0) 
+        self._init_check_camera()
         self._parse_weights_path()
         self._init_inference_model()
         self._init_mediapipe()
         self._init_varbile()
-        self.tello = TelloController()
+        self._init_tello()
 
     def _init_tello(self):
         self.tello = TelloController()
@@ -30,6 +29,8 @@ class InteractivaSystem:
         self.inference = Inference(self.checkpoint_path_classify, self.checkpoint_path_detect)
 
     def _init_check_camera(self):
+        # 0代表电脑自带的摄像头
+        self.cap = cv2.VideoCapture(0) 
         if not self.cap.isOpened():
             raise Exception("Could not open camera.")
         
