@@ -17,7 +17,7 @@ import skimage.util as ski_util
 from sklearn.utils import shuffle
 import math
 from copy import copy
-
+import cv2
 # from others.params import *
 from tqdm import tqdm
 from PIL import Image
@@ -92,11 +92,29 @@ def construct_detect_annot(save_path, mode):
 
     
 
-
+def images_to_video(image_paths, label):
+    image_paths = sorted(image_paths)
+    # 读取第一张图片，获取图片的宽度和高度
+    first_image = cv2.imread(image_paths[0])
+    height, width, _ = first_image.shape
+    # 创建视频编码器对象
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    if not os.path.exists("./sample_video/"):
+        os.mkdir("./sample_video/")
+    output_video_path = "./sample_video/" + str(label) + ".mp4"
+    video = cv2.VideoWriter(output_video_path, fourcc, 30.0, (width, height))
+    for image_path in image_paths:
+        # 读取图片
+        image = cv2.imread(image_path)
+        # 写入视频
+        video.write(image)
+    # 释放资源
+    video.release()
 
 
 def construct_annot(save_path, mode):
     annot_dict = {k: [] for k in ['rgb', 'depth', 'label']}
+    video_sample_dict = {k: [] for k in range(83)}
     if mode == 'train':
         sub_ids = [3, 4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 44, 45,
                    46, 48, 49, 50]
@@ -140,6 +158,10 @@ def construct_annot(save_path, mode):
                     annot_dict['rgb'].append(rgb)
                     annot_dict['depth'].append(depth)
                     annot_dict['label'].append(int(label)-1)
+
+                    if len(video_sample_dict[int(label) - 1]) == 0:
+                        images_to_video(rgb, int(label) - 1)
+
     annot_df = pd.DataFrame(annot_dict)
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     annot_df.to_pickle(save_file)
