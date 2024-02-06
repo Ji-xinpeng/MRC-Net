@@ -159,9 +159,6 @@ def construct_annot(save_path, mode):
                     annot_dict['depth'].append(depth)
                     annot_dict['label'].append(int(label)-1)
 
-                    if len(video_sample_dict[int(label) - 1]) == 0:
-                        images_to_video(rgb, int(label) - 1)
-
     annot_df = pd.DataFrame(annot_dict)
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     annot_df.to_pickle(save_file)
