@@ -44,14 +44,24 @@ if args.is_detector_classify == "classify":
     input_data_shape = (8, 3, 224, 224)
 else:
     train_dataloader, val_dataloader = get_detect_dataloader()
+    is_mobile_v3_small = True
     print("--------------------------------- detect train -------------------------------")
-    from torchvision.models import mobilenet_v2 as mobilenet_v2
-    model = mobilenet_v2(pretrained=True)
-    # 修改分类器以适应自己的数据集
-    num_ftrs = model.classifier[1].in_features
-    model.classifier[1] = nn.Linear(num_ftrs, 2)
+    
+    if is_mobile_v3_small:
+        from torchvision.models import mobilenet_v3_small as mobilenet_v3_small
+        model = mobilenet_v3_small(pretrained=True)
+        in_features = model.classifier[3].in_features
+        model.classifier[3] = nn.Linear(in_features, 2)
+    else:
+        from torchvision.models import mobilenet_v2 as mobilenet_v2
+        model = mobilenet_v2(pretrained=True)
+        # 修改分类器以适应自己的数据集
+        num_ftrs = model.classifier[1].in_features
+        model.classifier[1] = nn.Linear(num_ftrs, 2)
+        
     policies = get_detect_model_policies(model)
     input_data_shape = (3, 224, 224)
+    
 
 # 计算模型参数数量
 print("模型的参数量:", sum(p.numel() for p in model.parameters()))
