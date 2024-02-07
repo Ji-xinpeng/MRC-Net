@@ -46,7 +46,7 @@ def parse_opts():
     parser.add_argument('--if_need_load_dataset', default=False, type=str)  #
     parser.add_argument('--begin_split', default=0, type=str)  # my_block
     parser.add_argument('--if_get_data_and_label', default=True, type=str)
-    parser.add_argument('--is_detector_classify', default="detect", type=str) # classify detect
+    parser.add_argument('--is_detector_classify', default="classify", type=str) # classify detect
     parser.add_argument('--is_mobile_v3_small', default=True, type=str)
 
     args = parser.parse_args()
@@ -91,6 +91,7 @@ params['learning_rate'] = args.lr
 if args.is_detector_classify == "detect":
     if args.is_mobile_v3_small:
         params['batch_size'] = args.batch_size * 16
+        args.base_model = "mobilenetv3_samll"
     else:
         params['batch_size'] = args.batch_size * 8
     args.lr_steps = [1, 2]

@@ -39,10 +39,10 @@ frame_path = os.path.dirname(parent_directory) + '/EgoGesture/frames'
 def construct_detect_annot(save_path, mode):
     dectct_dict = {k: [] for k in ['detect', 'label']}
     if mode == 'detect_train':
-        sub_ids = [3, 4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 44, 45,
-                   46, 48, 49, 50, 2, 9, 11, 14, 18, 19, 28, 31, 41, 47]
+        sub_ids = [4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 45,
+                   46, 48, 34, 50, 2,  11, 14, 18, 19, 28, 31]
     elif mode == 'detect_val':
-        sub_ids = [1, 7, 12, 13, 24, 29, 33, 34, 35, 37]
+        sub_ids = [1, 3, 7, 9, 12, 13, 24, 29, 33, 49, 35, 37, 41, 44, 47]
 
     for sub_i in tqdm(sub_ids):
         frame_path_sub = os.path.join(frame_path, 'Subject{:02}'.format(sub_i))
