@@ -46,7 +46,8 @@ def parse_opts():
     parser.add_argument('--if_need_load_dataset', default=False, type=str)  #
     parser.add_argument('--begin_split', default=0, type=str)  # my_block
     parser.add_argument('--if_get_data_and_label', default=True, type=str)
-    parser.add_argument('--is_detector_classify', default="classify", type=str) # classify detect
+    parser.add_argument('--is_detector_classify', default="detect", type=str) # classify detect
+    parser.add_argument('--is_mobile_v3_small', default=True, type=str)
 
     args = parser.parse_args()
     return args
@@ -88,7 +89,10 @@ params['num_workers'] = args.num_workers
 params['learning_rate'] = args.lr
 
 if args.is_detector_classify == "detect":
-    params['batch_size'] = args.batch_size * 8
+    if args.is_mobile_v3_small:
+        params['batch_size'] = args.batch_size * 16
+    else:
+        params['batch_size'] = args.batch_size * 8
     args.lr_steps = [1, 2]
     params['epoch_num'] = 3
 

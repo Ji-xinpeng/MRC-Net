@@ -44,10 +44,9 @@ if args.is_detector_classify == "classify":
     input_data_shape = (8, 3, 224, 224)
 else:
     train_dataloader, val_dataloader = get_detect_dataloader()
-    is_mobile_v3_small = True
     print("--------------------------------- detect train -------------------------------")
     
-    if is_mobile_v3_small:
+    if args.is_mobile_v3_small:
         from torchvision.models import mobilenet_v3_small as mobilenet_v3_small
         model = mobilenet_v3_small(pretrained=True)
         in_features = model.classifier[3].in_features
