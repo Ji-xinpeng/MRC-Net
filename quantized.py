@@ -20,7 +20,7 @@ def load_classift_model(checkpoint_path, device):
     cudnn.benchmark = True
     model = TSN(params['num_classes'], args.clip_len, 'RGB', 
                         is_shift = args.is_shift,
-                        base_model=args.base_model, 
+                        base_model="mobilenetv2", 
                         shift_div = args.shift_div, 
                         img_feature_dim = 224,
                         consensus_type='avg',
@@ -106,8 +106,13 @@ def evaluate(model, data_loader, device):
 
 def quantization_run(name, train_loader, test_loader, model, device, path, int8orfp16):
     quantization_before_acc, infer_time_before = evaluate(model, test_loader, device)
-    quantization_model_path = quantization(model, path, train_loader, int8orfp16, torch.device('cpu'))
-    quantization_model = load_classift_model(quantization_model_path, device)
+
+    quantization_path = quantization(model, path, train_loader, int8orfp16, torch.device('cpu'))
+    if "detect" in quantization_path:
+        quantization_model = load_detect_model(quantization_path, device)
+    elif "classify" in quantization_path:
+        quantization_model = load_classift_model(quantization_model, device)
+
     quantization_after_acc, infer_time_after = evaluate(quantization_model, test_loader, device)
     print(f"量化之前准确率：{quantization_before_acc}, 推理时间为 {infer_time_before}")
     print(f"量化之前准确率：{quantization_after_acc}, 推理时间为 {infer_time_after}")
@@ -125,14 +130,14 @@ if __name__ == "__main__":
     classify_name = "mobilenetv2classify.pth.tar"
     classify_path = parse_select_weights_path(classify_name)
     train_loader, test_loader = load_dataset()
-    model_classify = load_detect_model(classify_path, device)
+    model_classify = load_classift_model(classify_path, device)
     quantization_run(classify_name, train_loader, test_loader, model_classify, device, classify_path, int8orfp16)
 
     print("----------------------------  detect quantization  -----------------------------")
     detect_name = "mobilenetv3_samlldetectonlystate.pth.tar"
     detect_path = parse_select_weights_path(detect_name)
     train_dataloader, val_dataloader = get_detect_dataloader()
-    model_detect = load_classift_model(detect_path, device)
-    quantization_run(detect_name, train_dataloader, val_dataloader, model_detect, device, detect_path, int8orfp16)
+    model_detect = load_detect_model(detect_path, device)
+    quantization_run(detect_name, val_dataloader, val_dataloader, model_detect, device, detect_path, int8orfp16)
 
     
