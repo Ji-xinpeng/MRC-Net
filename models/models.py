@@ -167,11 +167,9 @@ class TSN(nn.Module):
                 flag = 0
                 for m in self.base_model.modules():
                     if isinstance(m, InvertedResidual) and len(m.conv) == 8 and m.use_res_connect:
-                        if m.stride == 2:
-                        # if flag == 1 or flag == 5 or flag == 7 or flag == 8: 
+                        if flag == 1: 
                             print("-----------------------------------------------  flag  : ", flag, m)
                             m.conv[0] = Action2(m.conv[0], n_segment=self.num_segments, shift_div=self.shift_div)     
-                        # elif flag == 0 or flag == 2 or flag == 3 or flag == 4 or flag == 6:
                         else:
                             print("-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  flag  : ", flag, m)
                             m.conv[0] = Action(m.conv[0], n_segment=self.num_segments, shift_div=self.shift_div)   
