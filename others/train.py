@@ -270,6 +270,7 @@ def my_train(model, train_dataloader, val_dataloader, device, record, policies=N
                 torch.save(only_state_checkpoint, save_path_only_state)
                 # save_path_dict = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + ".pth.tar")
                 # utils.save_checkpoint(model, optimizer, save_path_dict)
+                torch.save(model, save_path_only_state.split(".tar")[0])
 
 
             if top5_acc > best_acc_top5:
