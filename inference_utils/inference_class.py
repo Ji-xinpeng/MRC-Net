@@ -7,8 +7,11 @@ import time
 import numpy as np
 import cv2
 from PIL import Image
-# import tensorrt as trt
- 
+import tensorrt as trt
+import pycuda.driver as cuda
+import pycuda.autoinit
+from pycuda.compiler import SourceModule
+from model_exchange import ModelExchange
 # logger to capture errors, warnings, and other information during the build and inference phases
 # TRT_LOGGER = trt.Logger()
 
@@ -35,12 +38,26 @@ class Inference:
         self.val_dataloader = None
         self.spatial_transform = None
         self.temporal_transform_test = None
+        self.model_exchange_detect = None
+        self.model_exchange_classify = None
         self.need_classify_video = []
         self._get_spatial_temporal()
         # self._build_onnxruntime()
         self._is_gpu_available()
         self.cap = cv2.VideoCapture(0)
         self._get_device_info()
+        self._init_model_exchange_detect()
+        self._init_model_exchange_classify()
+
+    def _init_model_exchange_detect(self):
+        weights_name = self.checkpoint_path_detect
+        input_shape = (1, 3, 224, 224)
+        self.model_exchange_detect = ModelExchange(weights_name, input_shape, 'fp32')
+
+    def _init_model_exchange_classify(self):
+        weights_name = self.checkpoint_path_classify
+        input_shape = (1, 8, 3, 224, 224)
+        self.model_exchange_classify = ModelExchange(weights_name, input_shape, 'fp32')
 
 
     def _get_device_info(self):
@@ -90,7 +107,6 @@ class Inference:
     def _get_onnx_path(self, checkpoint_path):
         onnx_path = checkpoint_path.split('.')[0] + '.onnx'
         return onnx_path
-    
     
     def _get_spatial_temporal(self):
         input_mean = [.485, .456, .406]
@@ -151,6 +167,36 @@ class Inference:
         # print(f"pth 代码运行时间: {execution_time}秒")
         return int(predicted_class[0])
     
+    def _inference_detect_trt(self, image):
+        image = self._preprocess_image(image)
+        trt_result = self.inference_detect_with_trt(image)
+        return trt_result
+    
+    def inference_detect_with_trt(self, img_in):
+        h_input = cuda.pagelocked_empty(trt.volume(self.context.get_binding_shape(0)), dtype=np.float32)
+        h_output = cuda.pagelocked_empty(trt.volume(self.context.get_binding_shape(1)), dtype=np.float32)
+        # Allocate device memory for inputs and outputs.
+        d_input = cuda.mem_alloc(h_input.nbytes)
+        d_output = cuda.mem_alloc(h_output.nbytes)
+        # Create a stream in which to copy inputs/outputs and run inference.
+        stream = cuda.Stream()
+        # set the host input data
+        # h_input = img_in
+        np.copyto(h_input, img_in.ravel())
+        # Transfer input data to the GPU.
+        cuda.memcpy_htod_async(d_input, h_input, stream)
+        # Run inference.
+        self.context.execute_async_v2(bindings=[int(d_input), int(d_output)], stream_handle=stream.handle)
+        # Transfer predictions back from the GPU.
+        cuda.memcpy_dtoh_async(h_output, d_output, stream)
+        # Synchronize the stream
+        stream.synchronize()
+        # outputs = h_output.view(1, -1)
+        # outputs = F.softmax(outputs, 1)
+        # 找到概率最大值的索引，这就是预测值
+        _, predicted_class = torch.max(torch.from_numpy(np.array([h_output])), 1)
+        print(f'\r预测的类别是: {predicted_class[0]}', end='')
+        return int(predicted_class[0])
 
     def _build_onnxruntime(self):
         if 'CUDAExecutionProvider' in onnxruntime .get_available_providers():
@@ -175,4 +221,9 @@ class Inference:
         execution_time = end_time - start_time
         print(f"\ronnx 代码运行时间: {execution_time}秒", end='')
         return int(predicted_class[0][0])
-    
+
+
+
+if __name__ == "__main__":
+    classify_weights_name = "mobilenetv3_samlldetectonlystate.pth"
+    detect_weights_name = "mobilenetv2classifyonlystate.pth"

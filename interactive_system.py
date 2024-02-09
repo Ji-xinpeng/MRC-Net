@@ -53,7 +53,6 @@ class InteractivaSystem:
         cv2.destroyAllWindows()
 
     def _show_mediapipe(self):
-        # print(f'\r预测的类别是: {self.mp_results.multi_hand_landmarks}', end='')
         if self.mp_results.multi_hand_landmarks:
             for handlms in self.mp_results.multi_hand_landmarks:
                 self.mpDraw.draw_landmarks(self.frame, handlms, self.mpHands.HAND_CONNECTIONS)

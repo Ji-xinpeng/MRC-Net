@@ -37,7 +37,7 @@ def load_classift_model(checkpoint_path, device):
 
 def load_detect_model(checkpoint_path, device):
     cudnn.benchmark = True
-    model = mobilenet_v3_small(pretrained=True)
+    model = mobilenet_v3_small(pretrained=False)
     in_features = model.classifier[3].in_features
     model.classifier[3] = nn.Linear(in_features, 2)
     pretrained_dict = torch.load(checkpoint_path, map_location='cpu')
@@ -50,27 +50,22 @@ def load_detect_model(checkpoint_path, device):
 def quantization(model, checkpoint_path, train_loader, int8orfp16, device):
     print("-----  weights path ----", checkpoint_path)
     model.eval()
-    if int8orfp16 == "fp16":
-        model.half()
     # 指定量化配置, - "fbgemm" 对应 x86 架构，"qnnpack" 对应移动架构
-    model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
+    model.qconfig = torch.quantization.get_default_qconfig('x86')
     # 准备模型进行后训练静态量化
-    torch.quantization.prepare(model, inplace=False)
+    model = torch.quantization.prepare(model)
     # 运行模型，执行校准
-    with torch.no_grad():
-        for step, inputs in tqdm(enumerate(train_loader), total=len(train_loader), desc="quantization"):
-            rgb, depth, labels = inputs[0], inputs[1], inputs[2]
-            if int8orfp16 == "fp16":
-                rgb = rgb.half()
-            rgb = rgb.to(torch.device('cuda'))
-            outputs = model(rgb)
+    for step, inputs in tqdm(enumerate(train_loader), total=len(train_loader), desc="quantization"):
+        rgb, depth, labels = inputs[0], inputs[1], inputs[2]
+        rgb = rgb.to(torch.device('cuda'))
+        model(rgb)
     # 将量化方案应用到模型上
-    torch.quantization.convert(model, inplace=False)
+    model_quantized = torch.quantization.convert(model, inplace=True)
     # 保存量化模型
     save_path = checkpoint_path.split('.')[0] + "quantized_model" + int8orfp16 + ".pth.tar"
     print("----- quantization weights saved path ----", save_path)
     checkpoint = {
-        'state_dict': model.state_dict(),
+        'state_dict': model_quantized.state_dict(),
         }
     torch.save(checkpoint, save_path)
     return save_path
@@ -106,15 +101,16 @@ def evaluate(model, data_loader, device):
 
 def quantization_run(name, train_loader, test_loader, model, device, path, int8orfp16):
     quantization_before_acc, infer_time_before = evaluate(model, test_loader, device)
+    print(f"量化之前准确率：{quantization_before_acc}, 推理时间为 {infer_time_before}")
 
     quantization_path = quantization(model, path, train_loader, int8orfp16, torch.device('cpu'))
+    print("quantization_path : ", quantization_path)
     if "detect" in quantization_path:
         quantization_model = load_detect_model(quantization_path, device)
     elif "classify" in quantization_path:
-        quantization_model = load_classift_model(quantization_model, device)
+        quantization_model = load_classift_model(quantization_path, device)
 
     quantization_after_acc, infer_time_after = evaluate(quantization_model, test_loader, device)
-    print(f"量化之前准确率：{quantization_before_acc}, 推理时间为 {infer_time_before}")
     print(f"量化之前准确率：{quantization_after_acc}, 推理时间为 {infer_time_after}")
     print(f' {name} Accuracy 下降了 ====== : {quantization_before_acc - quantization_after_acc}')
 
@@ -127,17 +123,17 @@ if __name__ == "__main__":
     int8orfp16 = "int8"   
 
     print("----------------------------  classify quantization  -----------------------------")
-    classify_name = "mobilenetv2classify.pth.tar"
+    classify_name = "mobilenetv2classifyonlystate.pth.tar"
     classify_path = parse_select_weights_path(classify_name)
     train_loader, test_loader = load_dataset()
     model_classify = load_classift_model(classify_path, device)
-    quantization_run(classify_name, train_loader, test_loader, model_classify, device, classify_path, int8orfp16)
+    quantization_run(classify_name, test_loader, test_loader, model_classify, device, classify_path, int8orfp16)
 
     print("----------------------------  detect quantization  -----------------------------")
-    detect_name = "mobilenetv3_samlldetectonlystate.pth.tar"
-    detect_path = parse_select_weights_path(detect_name)
-    train_dataloader, val_dataloader = get_detect_dataloader()
-    model_detect = load_detect_model(detect_path, device)
-    quantization_run(detect_name, val_dataloader, val_dataloader, model_detect, device, detect_path, int8orfp16)
+    # detect_name = "mobilenetv3_samlldetectonlystate.pth.tar"
+    # detect_path = parse_select_weights_path(detect_name)
+    # train_dataloader, val_dataloader = get_detect_dataloader()
+    # model_detect = load_detect_model(detect_path, device)
+    # quantization_run(detect_name, train_dataloader, val_dataloader, model_detect, device, detect_path, int8orfp16)
 
     

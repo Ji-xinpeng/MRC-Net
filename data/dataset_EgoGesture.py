@@ -73,19 +73,22 @@ def construct_detect_annot(save_path, mode):
 
                 for data_i in range(data_note.values.shape[0]):
                     label = data_note.values[data_i, 0]
-                    rgb = []
+                    skip = 0
                     detect_end = int(data_note.values[data_i, 1])
                     for img_ind in range(int(data_note.values[data_i, 1]), int(data_note.values[data_i, 2] - 1)):
-                        rgb.append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
-                        dectct_dict['detect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
-                        dectct_dict['label'].append(1)
+                            dectct_dict['detect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(img_ind)))
+                            dectct_dict['label'].append(1)
+                        
                     for dec in range(dectct_start, detect_end):
-                        dectct_dict['detect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(dec)))
-                        dectct_dict['label'].append(0)
+                        if skip % 2 == 0:
+                            dectct_dict['detect'].append(os.path.join(rgb_path_group, '{:06}.jpg'.format(dec)))
+                            dectct_dict['label'].append(0)
+                        skip += 1
                     dectct_start = int(data_note.values[data_i, 2])
 
     detect_df = pd.DataFrame(dectct_dict)
     print(len(detect_df))
+    print("检测数据集中， 正样本 = {}，  负样本 = {}".format(len(detect_df[detect_df['label'] == 1]), len(detect_df[detect_df['label'] == 0])))
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     detect_df.to_pickle(save_file)
 

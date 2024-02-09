@@ -93,7 +93,7 @@ if args.is_detector_classify == "detect":
         params['batch_size'] = args.batch_size * 16
         args.base_model = "mobilenetv3_samll"
     else:
-        params['batch_size'] = args.batch_size * 8
+        params['batch_size'] = args.batch_size * 10
     args.lr_steps = [1, 2]
     params['epoch_num'] = 3
 
