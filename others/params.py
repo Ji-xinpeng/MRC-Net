@@ -91,7 +91,7 @@ params['learning_rate'] = args.lr
 if args.is_detector_classify == "detect":
     if args.is_mobile_v3_small:
         params['batch_size'] = args.batch_size * 16
-        args.base_model = "mobilenetv3_samll"
+        args.base_model = "mobilenetv3_small"
     else:
         params['batch_size'] = args.batch_size * 10
     args.lr_steps = [1, 2]
