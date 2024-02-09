@@ -56,7 +56,7 @@ class My2DBlock(nn.Module):
 
         x_out = (attention @ x_v)
         x_out = self.conv_mask(x_out)
-        # x_out = self.sigmoid(x_out)
+        x_out = self.sigmoid(x_out)
 
         return x_out   # nt, c, h, w
 
