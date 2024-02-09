@@ -47,25 +47,48 @@ def load_detect_model(checkpoint_path, device):
     model = model.to(device)
     return model
 
+# def quantization(model, checkpoint_path, train_loader, int8orfp16, device):
+#     print("-----  weights path ----", checkpoint_path)
+#     model.eval()
+#     # 指定量化配置, - "fbgemm" 对应 x86 架构，"qnnpack" 对应移动架构
+#     model.qconfig = torch.quantization.get_default_qconfig('x86')
+#     # 准备模型进行后训练静态量化
+#     model = torch.quantization.prepare(model)
+#     # 运行模型，执行校准
+#     for step, inputs in tqdm(enumerate(train_loader), total=len(train_loader), desc="quantization"):
+#         rgb, depth, labels = inputs[0], inputs[1], inputs[2]
+#         rgb = rgb.to(torch.device('cuda'))
+#         model(rgb)
+#     # 将量化方案应用到模型上
+#     model_quantized = torch.quantization.convert(model)
+#     # 保存量化模型
+#     save_path = checkpoint_path.split('.')[0] + "quantized_model" + int8orfp16 + ".pth.tar"
+#     print("----- quantization weights saved path ----", save_path)
+#     checkpoint = {
+#         'state_dict': model_quantized.state_dict(),
+#         }
+#     torch.save(checkpoint, save_path)
+#     return save_path
+
+
 def quantization(model, checkpoint_path, train_loader, int8orfp16, device):
-    print("-----  weights path ----", checkpoint_path)
-    model.eval()
-    # 指定量化配置, - "fbgemm" 对应 x86 架构，"qnnpack" 对应移动架构
-    model.qconfig = torch.quantization.get_default_qconfig('x86')
-    # 准备模型进行后训练静态量化
-    model = torch.quantization.prepare(model)
-    # 运行模型，执行校准
-    for step, inputs in tqdm(enumerate(train_loader), total=len(train_loader), desc="quantization"):
-        rgb, depth, labels = inputs[0], inputs[1], inputs[2]
-        rgb = rgb.to(torch.device('cuda'))
-        model(rgb)
-    # 将量化方案应用到模型上
-    model_quantized = torch.quantization.convert(model, inplace=True)
-    # 保存量化模型
-    save_path = checkpoint_path.split('.')[0] + "quantized_model" + int8orfp16 + ".pth.tar"
-    print("----- quantization weights saved path ----", save_path)
+    from torch.ao.quantization import ( 
+        get_default_qconfig_mapping, 
+        get_default_qat_qconfig_mapping, 
+        QConfigMapping, 
+    ) 
+    import torch.quantization.quantize_fx as quantize_fx 
+    import copy 
+    model_to_quantize = copy.deepcopy(model).to(device) 
+    model_to_quantize.eval() 
+    qconfig_mapping = QConfigMapping().set_global(torch.ao.quantization.default_dynamic_qconfig) 
+    example_inputs = next(iter(train_loader))[0] 
+    model_prepared = quantize_fx.prepare_fx(model_to_quantize, qconfig_mapping,  
+                    example_inputs) 
+    model_quantized_dynamic = quantize_fx.convert_fx(model_prepared)
+    save_path = checkpoint_path.split('.')[0] + "quantized_model" + int8orfp16 + ".pth"
     checkpoint = {
-        'state_dict': model_quantized.state_dict(),
+        'state_dict': model_quantized_dynamic.state_dict(),
         }
     torch.save(checkpoint, save_path)
     return save_path

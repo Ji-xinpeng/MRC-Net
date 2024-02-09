@@ -112,7 +112,7 @@ class ModelExchange:
 
 
 # if __name__ == "__main__":
-#     weights_name = "mobilenetv3_samlldetectonlystate.pth"
+#     weights_name = "mobilenetv3_smalldetect.pth"
 #     input_shape = (1, 3, 224, 224)
 #     model_exchange = ModelExchange(weights_name, input_shape, 'fp32')
 

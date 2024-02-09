@@ -225,5 +225,5 @@ class Inference:
 
 
 if __name__ == "__main__":
-    classify_weights_name = "mobilenetv3_samlldetectonlystate.pth"
-    detect_weights_name = "mobilenetv2classifyonlystate.pth"
+    classify_weights_name = "mobilenetv2classify.pth"
+    detect_weights_name = "mobilenetv3_smalldetect.pth"
