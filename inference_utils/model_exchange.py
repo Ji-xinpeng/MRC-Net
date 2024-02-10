@@ -17,16 +17,15 @@ from others.train import *
 from models.models import *
 from others.params import *
 from deals.load_dataset import * 
+from onnxsim import simplify
 
 
 class ModelExchange:
     def __init__(self, weights_name: str, input_shape: tuple, precision: str) -> None:
-        self.weights_name = weights_name
+        self.weights_path = weights_name
         self.input_shape = input_shape
         self.precision = precision
         self.current_directory = self._init_get_current_path()
-        self.weights_path = self._parse_weights_path()
-        self._get_spatial_temporal()
         self._exchange_run()
         self.get_content()
 
@@ -35,11 +34,6 @@ class ModelExchange:
         current_directory = os.path.dirname(current_file)
         print("current_directory : ", os.path.dirname(current_directory))
         return os.path.dirname(current_directory)
-    
-    def _parse_weights_path(self):
-        weights_path = self.current_directory + '/weights/' + self.weights_name
-        print("weights_path : ", weights_path)
-        return weights_path
 
     def _check_onnx_is_succesful(self):
         onnx_model = onnx.load(self.onnx_save_path)
@@ -60,6 +54,13 @@ class ModelExchange:
         )
         self._check_onnx_is_succesful()
         print("onnx has been saved to : ", self.onnx_save_path)
+        self._convert_onnx_to_simple()
+
+    def _convert_onnx_to_simple(self):
+        onnx_model = onnx.load(self.onnx_save_path)
+        model_simp, check = simplify(onnx_model)
+        assert check, "Simplified ONNX model could not be validated"
+        onnx.save(model_simp, self.onnx_save_path)
 
     def _convert_to_trt(self):
         TRT_LOGGER = trt.Logger()

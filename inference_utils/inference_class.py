@@ -11,7 +11,7 @@ import tensorrt as trt
 import pycuda.driver as cuda
 import pycuda.autoinit
 from pycuda.compiler import SourceModule
-from model_exchange import ModelExchange
+from inference_utils.model_exchange import ModelExchange
 # logger to capture errors, warnings, and other information during the build and inference phases
 # TRT_LOGGER = trt.Logger()
 

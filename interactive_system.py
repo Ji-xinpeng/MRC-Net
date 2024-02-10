@@ -4,16 +4,16 @@ import time
 from PIL import Image
 import mediapipe as mp
 from inference_utils.inference_class import Inference
-from human_machine_system.tello import TelloController
+# from human_machine_system.tello import TelloController
 
 class InteractivaSystem:
     def __init__(self) -> None:
-        self._init_check_camera()
+        # self._init_check_camera()
         self._parse_weights_path()
         self._init_inference_model()
         self._init_mediapipe()
         self._init_varbile()
-        self._init_tello()
+        # self._init_tello()
 
     def _init_tello(self):
         self.tello = TelloController()
@@ -73,7 +73,6 @@ class InteractivaSystem:
         self.last_detect_result = detect_result
 
     def system_run(self):
-        self._init_check_camera()
         while True:
             success, self.frame = self.cap.read()
             if success:
