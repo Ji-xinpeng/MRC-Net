@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 # 加载数据集
-train_dataloader, val_dataloader = load_dataset()
+# train_dataloader, val_dataloader = load_dataset()
 
 # 加载数据集
 x = torch.randn(1, 8, 3, 224, 224)
@@ -32,7 +32,7 @@ model = TSN(params['num_classes'], args.clip_len, 'RGB',
 
 # 计算模型参数数量
 print("模型的参数量:", sum(p.numel() for p in model.parameters()))
-# summary(model, (args.clip_len, 3, 224, 224), -1, device="cpu")
+summary(model, (args.clip_len, 3, 224, 224), -1, device="cpu")
 
 y = model(x)
 print("经过模型输出的张量维度是", y.shape)

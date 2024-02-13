@@ -34,7 +34,6 @@ class InvertedResidual(nn.Module):
 
         hidden_dim = int(inp * expand_ratio)
         self.use_res_connect = self.stride == 1 and inp == oup
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  inp == oup : ", inp, oup, self.use_res_connect)
 
         if expand_ratio == 1:
             self.conv = nn.Sequential(
