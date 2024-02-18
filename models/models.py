@@ -168,10 +168,10 @@ class TSN(nn.Module):
                 stride2 = [1, 3, 6, 13]
                 from models.action import Action, Action2
                 for m in self.base_model.modules(): 
-                    if isinstance(m, InvertedResidual) and flag in stride1:
+                    if isinstance(m, InvertedResidual) and flag > 0 and flag % 2 == 0:
                         print("00------------------------------- : ", flag, m.stride)
                         m.conv[0] = Action(m.conv[0], n_segment=self.num_segments, shift_div=self.shift_div)    
-                    elif isinstance(m, InvertedResidual) and flag in stride2:
+                    elif isinstance(m, InvertedResidual) and flag > 0 and flag % 2 == 1:
                         m.conv[0] = Action2(m.conv[0], n_segment=self.num_segments, shift_div=self.shift_div)   
                         print("00-@@@@@@@@@@@@@@@@@@@@@@@@@@@------ : ", flag, m.stride)
                     if isinstance(m, InvertedResidual):
