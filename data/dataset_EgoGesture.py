@@ -16,6 +16,7 @@ import random
 import skimage.util as ski_util
 from sklearn.utils import shuffle
 import math
+from pathlib import Path
 from copy import copy
 # from others.params import *
 from tqdm import tqdm
@@ -34,9 +35,14 @@ label_path = os.path.dirname(parent_directory) + '/EgoGesture/labels-final-revis
 # # frame files stored path
 frame_path = os.path.dirname(parent_directory) + '/EgoGesture/frames'
 
+# 获取当前文件所在目录的上两级目录的路径
+two_up = Path(__file__).resolve().parents[1]
+sys.path.append(str(two_up))
+from others.params import *
 
-system_label = [63, 80, 81, 3, 2, 60, 61, 77, 76, 4, 5, 9, 13, 10, 14, 62]
 
+# system_label = [0, 1, 2, 3, 4, 5, 6, 9, 10, 13, 14, 38, 39, 54, 55, 56, 57, 58, 59, 61, 68, 69, 70, 71, 76, 77, 78, 79, 80, 81, 82]
+print("args.system_label len : ", len(args.system_label))
 
 def construct_detect_annot(save_path, mode):
     dectct_dict = {k: [] for k in ['detect', 'label']}
@@ -164,7 +170,7 @@ def construct_annot(save_path, mode):
                     annot_dict['depth'].append(depth)
                     annot_dict['label'].append(int(label)-1)
                     l = int(label)-1
-                    if l in system_label:
+                    if l in args.system_label:
                         annot_dict_for_system['label'].append(int(label)-1)
                         annot_dict_for_system['rgb'].append(rgb)
                         annot_dict_for_system['depth'].append(depth)
@@ -172,10 +178,23 @@ def construct_annot(save_path, mode):
     annot_df = pd.DataFrame(annot_dict)
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     annot_df.to_pickle(save_file)
+
+    # mask = annot_df['label'].isin(system_label)
+    # annot_df_for_system = annot_df[mask]
     annot_df_for_system = pd.DataFrame(annot_dict_for_system)
+    annot_df_for_system = deal_pkl_for_system(annot_df_for_system)
     save_file_for_system = os.path.join(save_path, '{}.pkl'.format(mode + "forsystem"))
     annot_df_for_system.to_pickle(save_file_for_system)
 
+
+
+def deal_pkl_for_system(df):
+    system_label2 = args.system_label
+    system_label2.sort()
+    print("system_label2: ", system_label2)
+    for i in range(len(system_label2)):
+        df['label'] = df['label'].apply(lambda x: i if x == system_label2[i] else x)
+    return df
 
 
 

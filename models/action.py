@@ -43,28 +43,13 @@ class Action(nn.Module):
 
         print('=> Using ACTION')
         self.my2Dblock = My2DBlock(self.in_channels)
-        # self.my3Dblock = My3DBlock(self.in_channels)
         self.mychannelblock = MyChannelBlock(self.in_channels)
 
 
     def forward(self, x):
-        nt, c, h, w = x.size()
-        n_batch = nt // self.n_segment
 
-        # x_shift = x.view(n_batch, self.n_segment, c, h, w)
-        # x_shift = x_shift.permute([0, 3, 4, 2, 1])  # (n_batch, h, w, c, n_segment)
-        # x_shift = x_shift.contiguous().view(n_batch * h * w, c, self.n_segment)
-        # x_shift = self.action_shift(x_shift)  # (n_batch*h*w, c, n_segment)
-        # x_shift = x_shift.view(n_batch, h, w, c, self.n_segment)
-        # x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
-        # x_shift = x_shift.contiguous().view(nt, c, h, w)
-
-        x_shift = x
-        x_p1 = self.mychannelblock(x_shift)
-        x_p1 = x_p1 * x_shift + x_shift
-
-        # x_p2 = self.my2Dblock(x_shift)
-        # x_p2 = x_p2 * x_shift + x_shift
+        x_p1 = self.mychannelblock(x)
+        x_p1 = x_p1 * x + x
 
         out = self.net(x_p1)
         return out
@@ -101,7 +86,6 @@ class Action2(nn.Module):
 
         print('=> Using ACTION')
         self.my2Dblock = My2DBlock(self.in_channels)
-        # self.my3Dblock = My3DBlock(self.in_channels)
         self.mychannelblock = MyChannelBlock(self.in_channels)
 
 
@@ -117,14 +101,10 @@ class Action2(nn.Module):
         x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
         x_shift = x_shift.contiguous().view(nt, c, h, w)
 
-        # x_p1 = self.mychannelblock(x_shift)
-        # x_p1 = x_p1 * x_shift + x_shift
-        # x_shift = x
         x_p2 = self.my2Dblock(x_shift)
         x_p2 = x_p2 * x_shift + x_shift
 
-        out = self.net(x_p2)
-        return out
+        return self.net(x_p2)
     
 
 class TemporalPool(nn.Module):

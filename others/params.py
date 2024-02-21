@@ -11,8 +11,8 @@ def parse_opts():
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=36)
-    parser.add_argument('--num_workers', type=int, default=24)
+    parser.add_argument('--batch_size', type=int, default=40)
+    parser.add_argument('--num_workers', type=int, default=40)
     parser.add_argument('--clip_len', type=int, default=8)
 
     # args for preprocessing
@@ -49,6 +49,8 @@ def parse_opts():
     parser.add_argument('--is_detector_classify', default="classify", type=str) # classify detect
     parser.add_argument('--is_mobile_v3_small', default=True, type=str)
     parser.add_argument('--is_train_for_system', default=True, type=str)
+    parser.add_argument('--system_label', type=float, default=[63, 80, 81, 3, 2, 60, 61, 77, 76, 4, 5, 9, 13, 10, 14, 62, 0, 1])
+    parser.add_argument('--less_kind_of_system_modes', default=True, type=str)
 
     args = parser.parse_args()
     return args
@@ -112,6 +114,7 @@ params['frame_sample_rate'] = 1
 
 
 if args.is_train_for_system:
-    params['num_classes'] = 16
+    params['num_classes'] = 18
     args.lr_steps = [10, 20, 30]
     params['epoch_num'] = 40
+    

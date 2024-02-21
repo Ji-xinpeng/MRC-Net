@@ -107,7 +107,7 @@ class ModelExchange:
         return inference_data.get_inference_data()
     
     def _exchange_run(self):
-        # self._convert_to_onnx()
+        self._convert_to_onnx()
         # self._convert_to_trt()
         pass
 

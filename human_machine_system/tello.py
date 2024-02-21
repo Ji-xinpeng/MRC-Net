@@ -1,4 +1,10 @@
 from djitellopy import Tello
+from pathlib import Path
+import sys
+# 获取当前文件所在目录的上两级目录的路径
+two_up = Path(__file__).resolve().parents[1]
+sys.path.append(str(two_up))
+from others.params import *
 
 
 class TelloParams:
@@ -7,6 +13,11 @@ class TelloParams:
         self.inter_frame = None
         self.mpresults = None
         self.command = None
+        self.label_for_system = args.system_label
+        self.label_for_system.sort()
+
+    def _convert_label_for_system(self, command):
+        self.command  = self.label_for_system[command]
 
 
 class TelloController:

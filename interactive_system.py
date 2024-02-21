@@ -6,6 +6,7 @@ from PIL import Image
 import mediapipe as mp
 from inference_utils.inference_class import Inference
 from human_machine_system.tello import TelloController
+from others.params import *
 
 class InteractivaSystem:
     def __init__(self) -> None:
@@ -23,8 +24,12 @@ class InteractivaSystem:
     def _parse_weights_path(self):
         current_file = os.path.abspath(__file__)
         current_directory = os.path.dirname(current_file)
-        self.checkpoint_path_classify = current_directory + '/weights/mobilenetv2classify.pth'
         self.checkpoint_path_detect = current_directory + '/weights/mobilenetv3_smalldetect.pth'
+        if args.less_kind_of_system_modes:
+            self.checkpoint_path_classify = current_directory + '/weights/mobilenetv2classify_for_system.pth'
+        else:
+            self.checkpoint_path_classify = current_directory + '/weights/mobilenetv2classify.pth'
+
 
     def _init_inference_model(self):
         self.inference = Inference(self.checkpoint_path_classify, self.checkpoint_path_detect)
@@ -77,7 +82,10 @@ class InteractivaSystem:
         self.tello_controller.tello_params.distance = self._get_distance()
         self.tello_controller.tello_params.inter_frame = len(self.inference.need_classify_video)
         self.tello_controller.tello_params.mpresults = self.mp_results
-        self.tello_controller.tello_params.command = self.command
+        if args.less_kind_of_system_modes:
+            self.tello_controller.tello_params._convert_label_for_system(self.command)
+        else:
+            self.tello_controller.tello_params.command = self.command
 
     def _inference_system(self, frame_rgb):
         rgb_image = Image.fromarray(frame_rgb)
@@ -90,7 +98,7 @@ class InteractivaSystem:
             self.prev_index_finger_tip = self._get_index_finger_tip()
             self.prev_mp_results = self.mp_results.multi_hand_landmarks
         elif detect_result == 0 and self.last_detect_result == 1 and len(self.inference.need_classify_video) > 8 and self.prev_mp_results is not None:
-            print("----------------------------- classify -----------------------------")
+            print("----------------------------- classify begin -----------------------------")
             # 进行手势识别推理
             self.command = self.inference.inference_pth()
             # 控制无人机
@@ -98,6 +106,7 @@ class InteractivaSystem:
             self.tello_controller.control()
             self.inference.need_classify_video = []
             self.first_index_finger_tip = None
+            print("--------------------------------------------------------------------------")
         self.last_detect_result = detect_result
 
     def system_run(self):
