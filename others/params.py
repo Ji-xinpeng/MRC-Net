@@ -49,7 +49,7 @@ def parse_opts():
     parser.add_argument('--is_detector_classify', default="classify", type=str) # classify detect
     parser.add_argument('--is_mobile_v3_small', default=True, type=str)
 
-    parser.add_argument('--system_label', type=float, default=[63, 80, 81, 3, 2, 60, 61, 77, 76, 4, 5, 9, 13, 10, 14, 62, 0, 1])
+    parser.add_argument('--system_label', type=float, default=[62, 63, 80, 81, 2, 3, 60, 61, 76, 77, 4, 5, 13, 14])
     # 正常训练把下面两个参数设置为 False
     parser.add_argument('--is_train_for_system', default=True, type=str)
     parser.add_argument('--less_kind_of_system_modes', default=True, type=str)
@@ -116,7 +116,7 @@ params['frame_sample_rate'] = 1
 
 
 if args.is_train_for_system:
-    params['num_classes'] = 18
+    params['num_classes'] = len(args.system_label)
     args.lr_steps = [10, 20, 30]
     params['epoch_num'] = 40
     

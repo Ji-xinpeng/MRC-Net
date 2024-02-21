@@ -55,8 +55,8 @@ class TelloController:
         self.flip_forward = [4]
         self.flip_back = [5]
 
-        self.rotate_clockwise = [9, 13]
-        self.rotate_counter_clockwise = [10, 14]
+        self.rotate_clockwise = [13]
+        self.rotate_counter_clockwise = [14]
 
     def _get_finger_tip_distance(self):
         # 获取食指点的位移
