@@ -166,12 +166,14 @@ class TSN(nn.Module):
                 from models.action import Action, Action2
                 flag = 0
                 for m in self.base_model.modules():
-                    if isinstance(m, InvertedResidual) and len(m.conv) == 8 and m.use_res_connect:
-                        if flag % 2 == 1: 
+                    if isinstance(m, InvertedResidual) and m.stride == 1:
+                        if flag % 2 == 1:
+                            print("@----------------------------@2 m : ", flag, m.stride, m.inp, m.oup)
                             m.conv[0] = Action2(m.conv[0], n_segment=self.num_segments, shift_div=self.shift_div)     
                         else:
+                            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2 m : ", flag, m.stride, m.inp, m.oup)
                             m.conv[0] = Action(m.conv[0], n_segment=self.num_segments, shift_div=self.shift_div)   
-                        flag += 1    
+                        flag += 1
 
             if self.modality == 'Flow':
                 self.input_mean = [0.5]

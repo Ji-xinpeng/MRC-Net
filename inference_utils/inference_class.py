@@ -6,11 +6,12 @@ import onnxruntime
 import time
 import numpy as np
 import cv2
+import glob
 from PIL import Image
-import tensorrt as trt
-import pycuda.driver as cuda
-import pycuda.autoinit
-from pycuda.compiler import SourceModule
+# import tensorrt as trt
+# import pycuda.driver as cuda
+# import pycuda.autoinit
+# from pycuda.compiler import SourceModule
 from inference_utils.model_exchange import ModelExchange
 # logger to capture errors, warnings, and other information during the build and inference phases
 # TRT_LOGGER = trt.Logger()
@@ -42,7 +43,6 @@ class Inference:
         self.model_exchange_classify = None
         self.need_classify_video = []
         self._get_spatial_temporal()
-        # self._build_onnxruntime()
         self._is_gpu_available()
         self.cap = cv2.VideoCapture(0)
         self._get_device_info()
@@ -52,12 +52,25 @@ class Inference:
     def _init_model_exchange_detect(self):
         weights_name = self.checkpoint_path_detect
         input_shape = (1, 3, 224, 224)
-        self.model_exchange_detect = ModelExchange(weights_name, input_shape, 'fp32')
+        if not self._check_model_exist(weights_name):
+            self.model_exchange_detect = ModelExchange(weights_name, input_shape, 'fp32')
 
     def _init_model_exchange_classify(self):
         weights_name = self.checkpoint_path_classify
         input_shape = (1, 8, 3, 224, 224)
-        self.model_exchange_classify = ModelExchange(weights_name, input_shape, 'fp32')
+        if not self._check_model_exist(weights_name):
+            self.model_exchange_classify = ModelExchange(weights_name, input_shape, 'fp32')
+
+    def _check_model_exist(self, weights_name):
+        current_file = os.path.abspath(__file__)
+        current_directory = os.path.dirname(current_file)
+        check_dir = os.path.dirname(current_directory)
+        file_list = os.listdir(check_dir)
+        onnx_files = [file for file in file_list if file.endswith('.onnx')]
+        if len(onnx_files) > 0:
+            print("存在.onnx格式的文件")
+            return True
+        return False
 
 
     def _get_device_info(self):
@@ -98,8 +111,8 @@ class Inference:
             self.model_detect.cuda()
             self.model_classify.cuda()
         else:
-            self.model_detect = self.model_detect.module
-            self.model_classify = self.model_classify.module
+            self.model_detect = self.model_detect
+            self.model_classify = self.model_classify
         self.model_detect.eval()
         self.model_classify.eval()
 
@@ -130,9 +143,14 @@ class Inference:
     
 
     def _load_dataloader(self):
+        # start_time = time.perf_counter()
         inference_data = need_to_classify_video(self.need_classify_video, spatial_transform=self.spatial_transform,
                                                         temporal_transform=self.temporal_transform_test)
-        return inference_data.get_inference_data()
+        data = inference_data.get_inference_data()
+        # end_time = time.perf_counter()
+        # execution_time = end_time - start_time
+        # print(f"识别推理模块预处理 代码运行时间: {execution_time}秒")
+        return data
     
 
     def inference_pth(self):
@@ -147,24 +165,29 @@ class Inference:
             print(f'\r预测的类别是: {predicted_class[0][0]}', end='')
         # end_time = time.perf_counter()
         # execution_time = end_time - start_time
-        # print(f"pth 代码运行时间: {execution_time}秒")
+        # print(f"识别推理模块 代码运行时间: {execution_time}秒")
         return int(predicted_class[0][0])
     
     
     def inference_detect_pth(self, image):
-        # start_time = time.perf_counter()
+        start_time = time.perf_counter()
         with torch.no_grad():
             image = self._preprocess_image(image)
+            # end_time = time.perf_counter()
+            # execution_time = end_time - start_time
+            # # 计算代码运行时间
+            # print(f"detect 预处理运行时间: {execution_time}秒")
             outputs = self.model_detect(image)
             outputs = outputs.view(1, -1)
             outputs = F.softmax(outputs, 1)
             # 找到概率最大值的索引，这就是预测值
             _, predicted_class = torch.max(outputs, 1)
-            # print(f'\r预测的类别是: {predicted_class[0]}', end='')
+            # if int(predicted_class[0]) > 0:
+            #     print("检测到手势")
         # end_time = time.perf_counter()
         # execution_time = end_time - start_time
-        # 计算代码运行时间
-        # print(f"pth 代码运行时间: {execution_time}秒")
+        # # 计算代码运行时间
+        # print(f"detect 代码运行时间: {execution_time}秒")
         return int(predicted_class[0])
     
     def _inference_detect_trt(self, image):
@@ -210,20 +233,20 @@ class Inference:
     
 
     def inference_onnx(self):
-        start_time = time.perf_counter()
+        # start_time = time.perf_counter()
         input_name = self.onnxruntime.get_inputs()[0].name
         outputs = self.onnxruntime.run(None, {input_name: np.array(self.val_dataloader)})
         outputs = torch.tensor(outputs).view(1, 1, -1)
         outputs = F.softmax(outputs, 2)
         _, predicted_class = torch.max(outputs, 2)
         print(f'\ronnx 预测的类别是: {predicted_class[0][0]}', end='')
-        end_time = time.perf_counter()
-        execution_time = end_time - start_time
-        print(f"\ronnx 代码运行时间: {execution_time}秒", end='')
+        # end_time = time.perf_counter()
+        # execution_time = end_time - start_time
+        # print(f"\ronnx 代码运行时间: {execution_time}秒", end='')
         return int(predicted_class[0][0])
 
 
 
-if __name__ == "__main__":
-    classify_weights_name = "mobilenetv2classify.pth"
-    detect_weights_name = "mobilenetv3_smalldetect.pth"
+# if __name__ == "__main__":
+#     classify_weights_name = "mobilenetv2classify.pth"
+#     detect_weights_name = "mobilenetv3_smalldetect.pth"

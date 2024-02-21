@@ -2,11 +2,11 @@ import os
 import torch
 from typing import Any
 import onnx
-import tensorrt as trt
+# import tensorrt as trt
 import numpy as np
-import pycuda.driver as cuda
-import pycuda.autoinit
-from pycuda.compiler import SourceModule
+# import pycuda.driver as cuda
+# import pycuda.autoinit
+# from pycuda.compiler import SourceModule
 from PIL import Image
 import torchvision.transforms as transforms
 import cv2
@@ -27,7 +27,7 @@ class ModelExchange:
         self.precision = precision
         self.current_directory = self._init_get_current_path()
         self._exchange_run()
-        self.get_content()
+        # self.get_content()
 
     def _init_get_current_path(self):
         current_file = os.path.abspath(__file__)
@@ -107,8 +107,9 @@ class ModelExchange:
         return inference_data.get_inference_data()
     
     def _exchange_run(self):
-        self._convert_to_onnx()
-        self._convert_to_trt()
+        # self._convert_to_onnx()
+        # self._convert_to_trt()
+        pass
 
 
 
