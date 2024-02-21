@@ -60,7 +60,7 @@ class TelloController:
 
     def _get_finger_tip_distance(self):
         # 获取食指点的位移
-        return self.tello_params.distance
+        return int(self.tello_params.distance)
 
     def _take_off(self, command):
         if self.has_connect:
