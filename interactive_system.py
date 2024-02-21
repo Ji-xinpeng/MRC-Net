@@ -45,11 +45,13 @@ class InteractivaSystem:
         self.mpDraw = mp.solutions.drawing_utils
         self.first_index_finger_tip = None
         self.prev_index_finger_tip = None
+        self.prev_mp_results = None
 
     def _init_varbile(self):
         self.frame = None
         self.mp_results = None
         self.last_detect_result = 0
+        self.command = None
 
     def close(self):
         self.cap.release()
@@ -71,6 +73,12 @@ class InteractivaSystem:
         distance = math.sqrt((prev_x - current_x)**2 + (prev_y - current_y)**2 + (prev_z - current_z)**2)
         return distance
 
+    def send_params_to_tello(self):
+        self.tello_controller.tello_params.distance = self._get_distance()
+        self.tello_controller.tello_params.inter_frame = len(self.inference.need_classify_video)
+        self.tello_controller.tello_params.mpresults = self.mp_results
+        self.tello_controller.tello_params.command = self.command
+
     def _inference_system(self, frame_rgb):
         rgb_image = Image.fromarray(frame_rgb)
         rgb_cache = rgb_image.convert("RGB")
@@ -80,14 +88,13 @@ class InteractivaSystem:
                 self.first_index_finger_tip = self._get_index_finger_tip()
             self.inference.need_classify_video.append(rgb_cache)
             self.prev_index_finger_tip = self._get_index_finger_tip()
-        elif detect_result == 0 and self.last_detect_result == 1 and len(self.inference.need_classify_video) > 8:
+            self.prev_mp_results = self.mp_results.multi_hand_landmarks
+        elif detect_result == 0 and self.last_detect_result == 1 and len(self.inference.need_classify_video) > 8 and self.prev_mp_results is not None:
             print("----------------------------- classify -----------------------------")
-            self.tello_controller.tello_params.distance = self._get_distance()
-            self.tello_controller.tello_params.inter_frame = len(self.inference.need_classify_video)
-            self.tello_controller.tello_params.mpresults = self.mp_results
             # 进行手势识别推理
-            self.tello_controller.tello_params.command = self.inference.inference_pth()
+            self.command = self.inference.inference_pth()
             # 控制无人机
+            self.send_params_to_tello()
             self.tello_controller.control()
             self.inference.need_classify_video = []
             self.first_index_finger_tip = None

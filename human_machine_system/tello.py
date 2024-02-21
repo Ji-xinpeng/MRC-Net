@@ -16,6 +16,7 @@ class TelloController:
         self.tello_params = TelloParams()
         self.coordinate_info = None
         self.has_connect = False
+        self.rate = 30
 
     def tello_connect(self):
         try:
@@ -28,18 +29,23 @@ class TelloController:
     def _registered_command(self):
         self.takeoff = [62]
         self.land = [63]
-        self.move_left = [58, 70]
-        self.move_right = [59, 71]
+
+        self.move_left = [80]
+        self.move_right = [81]
+        self.move_up = [3]
+        self.move_down = [2]
+
         self.move_back = [60]
         self.move_forward = [61]
-        self.move_up = [56, 68]
-        self.move_down = [57, 69]
-        self.flip_right = [0]
-        self.flip_left = [1]
+
+        self.flip_right = [77]
+        self.flip_left = [76]
+
         self.flip_forward = [4]
         self.flip_back = [5]
-        self.rotate_clockwise = [9, 14]
-        self.rotate_counter_clockwise = [10, 15]
+
+        self.rotate_clockwise = [9, 13]
+        self.rotate_counter_clockwise = [10, 14]
 
     def _get_finger_tip_distance(self):
         # 获取食指点的位移
@@ -57,36 +63,42 @@ class TelloController:
     
     def _move_left(self, command):
         distance = self._get_finger_tip_distance()
+        distance = (distance * self.rate)
         if self.has_connect:
             self.tello.move_left(distance)
         print("无人机 向左飞 {} 厘米".format(distance))
 
     def _move_right(self, command):
         distance = self._get_finger_tip_distance()
+        distance = (distance * self.rate)
         if self.has_connect:
             self.tello.move_right(distance)
         print("无人机 向右飞 {} 厘米".format(distance))
 
     def _move_forward(self, command):
         distance = self._get_finger_tip_distance()
+        distance = (distance * self.rate)
         if self.has_connect:
             self.tello.move_forward(distance)
         print("无人机 向前飞 {} 厘米".format(distance))
 
     def _move_back(self, command):
         distance = self._get_finger_tip_distance()
+        distance = (distance * self.rate)
         if self.has_connect:
             self.tello.move_back(distance)
         print("无人机 向后飞 {} 厘米".format(distance))
 
     def _move_up(self, command):
         distance = self._get_finger_tip_distance()
+        distance = (distance * self.rate)
         if self.has_connect:
             self.tello.move_up(distance)
         print("无人机 向上飞 {} 厘米".format(distance))
 
     def _move_down(self, command):
         distance = self._get_finger_tip_distance()
+        distance = (distance * self.rate)
         if self.has_connect:
             self.tello.move_down(distance)
         print("无人机 向下飞 {} 厘米".format(distance))

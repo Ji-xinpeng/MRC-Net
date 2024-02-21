@@ -35,6 +35,8 @@ label_path = os.path.dirname(parent_directory) + '/EgoGesture/labels-final-revis
 frame_path = os.path.dirname(parent_directory) + '/EgoGesture/frames'
 
 
+system_label = [63, 80, 81, 3, 2, 60, 61, 77, 76, 4, 5, 9, 13, 10, 14, 62]
+
 
 def construct_detect_annot(save_path, mode):
     dectct_dict = {k: [] for k in ['detect', 'label']}
@@ -116,6 +118,7 @@ def images_to_video(image_paths, label):
 
 def construct_annot(save_path, mode):
     annot_dict = {k: [] for k in ['rgb', 'depth', 'label']}
+    annot_dict_for_system = {k: [] for k in ['rgb', 'depth', 'label']}
     video_sample_dict = {k: [] for k in range(83)}
     if mode == 'train':
         sub_ids = [3, 4, 5, 6, 8, 10, 15, 16, 17, 20, 21, 22, 23, 25, 26, 27, 30, 32, 36, 38, 39, 40, 42, 43, 44, 45,
@@ -160,10 +163,18 @@ def construct_annot(save_path, mode):
                     annot_dict['rgb'].append(rgb)
                     annot_dict['depth'].append(depth)
                     annot_dict['label'].append(int(label)-1)
+                    l = int(label)-1
+                    if l in system_label:
+                        annot_dict_for_system['label'].append(int(label)-1)
+                        annot_dict_for_system['rgb'].append(rgb)
+                        annot_dict_for_system['depth'].append(depth)
 
     annot_df = pd.DataFrame(annot_dict)
     save_file = os.path.join(save_path, '{}.pkl'.format(mode))
     annot_df.to_pickle(save_file)
+    annot_df_for_system = pd.DataFrame(annot_dict_for_system)
+    save_file_for_system = os.path.join(save_path, '{}.pkl'.format(mode + "forsystem"))
+    annot_df_for_system.to_pickle(save_file_for_system)
 
 
 
