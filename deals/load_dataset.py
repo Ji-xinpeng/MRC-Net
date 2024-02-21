@@ -105,13 +105,18 @@ def load_dataset():
         print("Loading dataset")
         if args.dataset == 'EgoGesture':
 
-            train_dataset = dataset_EgoGesture.dataset_video(annot_path, 'train_plus_val',
+            pkl_name_train = 'train_plus_valforsystem' if args.is_train_for_system else 'train_plus_val'
+
+            train_dataset = dataset_EgoGesture.dataset_video(annot_path, pkl_name_train,
                                                              spatial_transform=trans_train,
                                                              temporal_transform=temporal_transform_train)
 
             train_dataloader = DataLoader(train_dataset, batch_size=params['batch_size'], shuffle=True,
                                           num_workers=params['num_workers'])
-            val_dataset = dataset_EgoGesture.dataset_video(annot_path, 'test', spatial_transform=trans_test,
+
+            pkl_name_test = 'testforsystem' if args.is_train_for_system else 'test'
+
+            val_dataset = dataset_EgoGesture.dataset_video(annot_path, pkl_name_test, spatial_transform=trans_test,
                                                            temporal_transform=temporal_transform_test)
             val_dataloader = DataLoader(val_dataset, batch_size=params['batch_size'], num_workers=params['num_workers'])
         elif args.dataset == 'jester':
