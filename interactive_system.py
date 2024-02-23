@@ -1,8 +1,8 @@
 import cv2
-import os
-import time
+# import os
+# import time
 import math
-from PIL import Image
+# from PIL import Image
 import mediapipe as mp
 from inference_utils.inference_class import Inference
 from human_machine_system.tello import TelloController

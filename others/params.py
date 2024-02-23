@@ -1,6 +1,6 @@
 import argparse
 import os
-from PIL import Image
+# from PIL import Image
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -11,7 +11,7 @@ def parse_opts():
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=36)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--num_workers', type=int, default=40)
     parser.add_argument('--clip_len', type=int, default=8)
 
@@ -51,8 +51,8 @@ def parse_opts():
 
     parser.add_argument('--system_label', type=float, default=[62, 63, 80, 81, 2, 3, 60, 61, 76, 77, 4, 5, 13, 14])
     # 正常训练把下面两个参数设置为 False
-    parser.add_argument('--is_train_for_system', default=True, type=str)
-    parser.add_argument('--less_kind_of_system_modes', default=True, type=str)
+    parser.add_argument('--is_train_for_system', default=False, type=str)
+    parser.add_argument('--less_kind_of_system_modes', default=False, type=str)
 
     args = parser.parse_args()
     return args
