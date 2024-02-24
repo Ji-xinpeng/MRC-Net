@@ -42,7 +42,7 @@ from others.params import *
 
 
 # system_label = [0, 1, 2, 3, 4, 5, 6, 9, 10, 13, 14, 38, 39, 54, 55, 56, 57, 58, 59, 61, 68, 69, 70, 71, 76, 77, 78, 79, 80, 81, 82]
-print("args.system_label len : ", len(args.system_label))
+# print("args.system_label len : ", len(args.system_label))
 
 def construct_detect_annot(save_path, mode):
     dectct_dict = {k: [] for k in ['detect', 'label']}

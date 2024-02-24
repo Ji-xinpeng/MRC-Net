@@ -14,7 +14,7 @@ from my_moudle.MyChannelBlock import *
 
 class Action_IFF(nn.Module):
     def __init__(self, net, n_segment=3, shift_div=8):
-        super(Action, self).__init__()
+        super(Action_IFF, self).__init__()
         self.net = net
         self.n_segment = n_segment
         self.in_channels = self.net.in_channels
@@ -49,8 +49,8 @@ class Action_IFF(nn.Module):
 
     def forward(self, x):
 
-        x_p1 = self.mychannelblock(x)
-        # x_p1 = self.myNewchannelblock(x)
+        # x_p1 = self.mychannelblock(x)
+        x_p1 = self.myNewchannelblock(x)
         x_p1 = x_p1 * x + x
 
         out = self.net(x_p1)
@@ -59,7 +59,7 @@ class Action_IFF(nn.Module):
 
 class Action_MRC(nn.Module):
     def __init__(self, net, n_segment=3, shift_div=8):
-        super(Action2, self).__init__()
+        super(Action_MRC, self).__init__()
         self.net = net
         self.n_segment = n_segment
         self.in_channels = self.net.in_channels

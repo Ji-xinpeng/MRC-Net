@@ -64,7 +64,7 @@ class MyAttention(nn.Module):
                  qk_scale=None,
                  attn_drop_ratio=0.,
                  proj_drop_ratio=0.):
-        super(Attention, self).__init__()
+        super(MyAttention, self).__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
         self.scale = qk_scale or head_dim ** -0.5
@@ -92,7 +92,7 @@ class MyAttention(nn.Module):
         qk = qk.permute(2, 0, 3, 1, 4)
         v = v.permute(2, 0, 3, 1, 4)
         # [batch_size, num_heads, num_patches + 1, embed_dim_per_head]
-        q, k = qkv[0], qkv[1] # make torchscript happy (cannot use tensor as tuple)
+        q, k = qk[0], qk[1] # make torchscript happy (cannot use tensor as tuple)
         
 
         # transpose: -> [batch_size, num_heads, embed_dim_per_head, num_patches + 1]

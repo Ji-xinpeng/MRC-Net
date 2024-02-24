@@ -40,7 +40,7 @@ class MyChannelBlock(nn.Module):
     
 class MyNewChannelBlock(nn.Module):
     def __init__(self, inter_channel):
-        super(MyChannelBlock, self).__init__()
+        super(MyNewChannelBlock, self).__init__()
         self.inter_channel = inter_channel
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.channel_aaten = attention.Attention(args.clip_len, num_heads=args.num_heads, qkv_bias=False, qk_scale=None, attn_drop_ratio=0., proj_drop_ratio=0.)
@@ -48,6 +48,7 @@ class MyNewChannelBlock(nn.Module):
         self.sigmoid = nn.Sigmoid()
         self.relu = nn.ReLU()
         self.positionalEncoding1D = PositionalEncoding1D(self.inter_channel)  # 1D ： [Batch size, Sequence length, Channels]
+        self.pad = (0, 0, 0, 1)
 
     def forward(self, x):
         x_p2 = self.avg_pool(x)
