@@ -48,10 +48,20 @@ class Action_IFF(nn.Module):
         
 
     def forward(self, x):
+        nt, c, h, w = x.size()
+        n_batch = nt // self.n_segment
 
-        # x_p1 = self.mychannelblock(x)
-        x_p1 = self.myNewchannelblock(x)
-        x_p1 = x_p1 * x + x
+        x_shift = x.view(n_batch, self.n_segment, c, h, w)
+        x_shift = x_shift.permute([0, 3, 4, 2, 1])  # (n_batch, h, w, c, n_segment)
+        x_shift = x_shift.contiguous().view(n_batch * h * w, c, self.n_segment)
+        x_shift = self.action_shift(x_shift)  # (n_batch*h*w, c, n_segment)
+        x_shift = x_shift.view(n_batch, h, w, c, self.n_segment)
+        x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
+        x_shift = x_shift.contiguous().view(nt, c, h, w)
+
+        x_p1 = self.mychannelblock(x_shift)
+        # x_p1 = self.myNewchannelblock(x)
+        x_p1 = x_shift * x_p1 + x_shift
 
         out = self.net(x_p1)
         return out
@@ -104,7 +114,7 @@ class Action_MRC(nn.Module):
         x_shift = x_shift.contiguous().view(nt, c, h, w)
 
         x_p2 = self.my2Dblock(x_shift)
-        x_p2 = x_p2 * x_shift + x_shift
+        x_p2 = x_shift * x_p2 + x_shift
 
         return self.net(x_p2)
     
@@ -196,7 +206,7 @@ def make_temporal_shift(net, n_segment, n_div=8, place='blockres', temporal_pool
                 print('=> Processing stage with {} blocks residual'.format(len(blocks)))
                 for i, b in enumerate(blocks):
                     if i % n_round == 0:
-                        blocks[i].conv1 = Action(b.conv1, n_segment=this_segment, shift_div=n_div)
+                        blocks[i].conv1 = Action_IFF(b.conv1, n_segment=this_segment, shift_div=n_div)
                         # pdb.set_trace()
                 return nn.Sequential(*blocks)
 

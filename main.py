@@ -1,10 +1,7 @@
 import torch.nn
-# from deals.load_dataset import *
-# from others.train import *
 from torchsummary import summary
-# from models.models import *
-# import h5py
 from detect_utils.detect_utils import *
+from others.params import args
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_id
 device = 'cuda'

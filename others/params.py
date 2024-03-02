@@ -7,12 +7,12 @@ warnings.filterwarnings("ignore")
 
 def parse_opts():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cuda_id', type=str, default='0')
+    parser.add_argument('--cuda_id', type=str, default='0,1,2,3')
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=36)
-    parser.add_argument('--num_workers', type=int, default=40)
+    parser.add_argument('--batch_size', type=int, default=56)
+    parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--clip_len', type=int, default=8)
 
     # args for preprocessing
@@ -32,7 +32,7 @@ def parse_opts():
     parser.add_argument('--npb', action="store_true")
     parser.add_argument('--pretrain', type=str, default='imagenet')  # 'imagenet' or False
     parser.add_argument('--dropout', default=0.5, type=float)
-    parser.add_argument('--base_model', default='mobilenetv2', type=str)  # resnet50   mobilenetv2    BNInception
+    parser.add_argument('--base_model', default='resnet50', type=str)  # resnet50   mobilenetv2    BNInception
     parser.add_argument('--dataset', default='EgoGesture', type=str)   # sthv2    EgoGesture    jester
     parser.add_argument('--weight_decay', '--wd', default=5e-4, type=float,
                         metavar='W', help='weight decay (default: 5e-4)')
@@ -72,10 +72,10 @@ parent_directory = os.path.dirname(current_directory)
 params = dict()
 if args.dataset == 'EgoGesture' and args.base_model == "resnet50":
     params['num_classes'] = 83
-    params['pretrained'] = parent_directory + '/weights/clip_len_8frame_sample_rate_1_checkpoint.pth.tar'
+    params['pretrained'] = parent_directory + '/pretrained_weights/clip_len_8frame_sample_rate_1_checkpoint.pth.tar'
 elif args.dataset == 'jester' and args.base_model == "resnet50":
     params['num_classes'] = 27
-    params['pretrained'] = parent_directory + '/weights/clip_len_8frame_sample_rate_1_checkpoint.pth (copy).tar'
+    params['pretrained'] = parent_directory + '/pretrained_weights/clip_len_8frame_sample_rate_1_checkpoint.pth (copy).tar'
 elif args.dataset == 'sthv2' and args.base_model == "resnet50":
     params['num_classes'] = 174
 
