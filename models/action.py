@@ -59,10 +59,10 @@ class Action_IFF(nn.Module):
         x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
         x_shift = x_shift.contiguous().view(nt, c, h, w)
 
+        # x_shift = x
         x_p1 = self.mychannelblock(x_shift)
         # x_p1 = self.myNewchannelblock(x)
         x_p1 = x_shift * x_p1 + x_shift
-
         out = self.net(x_p1)
         return out
 
@@ -186,7 +186,7 @@ def make_temporal_shift(net, n_segment, n_div=8, place='blockres', temporal_pool
                 blocks = list(stage.children())
                 print('=> Processing stage with {} blocks'.format(len(blocks)))
                 for i, b in enumerate(blocks):
-                    blocks[i].conv1 = Action(b.conv1, n_segment=this_segment, shift_div=n_div)
+                    blocks[i].conv1 = Action_IFF(b.conv1, n_segment=this_segment, shift_div=n_div)
                 return nn.Sequential(*(blocks))
 
             pdb.set_trace()
