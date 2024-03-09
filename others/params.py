@@ -7,17 +7,18 @@ warnings.filterwarnings("ignore")
 # tmux
 # tmux ls
 # tmux attach -d  -t sn_name
+# tmux 中 ： tmux kill-session
 
 
 
 
 def parse_opts():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cuda_id', type=str, default='2,3')
+    parser.add_argument('--cuda_id', type=str, default='3')
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--clip_len', type=int, default=8)
 

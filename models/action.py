@@ -105,14 +105,15 @@ class Action_MRC(nn.Module):
         nt, c, h, w = x.size()
         n_batch = nt // self.n_segment
 
-        x_shift = x.view(n_batch, self.n_segment, c, h, w)
-        x_shift = x_shift.permute([0, 3, 4, 2, 1])  # (n_batch, h, w, c, n_segment)
-        x_shift = x_shift.contiguous().view(n_batch * h * w, c, self.n_segment)
-        x_shift = self.action_shift(x_shift)  # (n_batch*h*w, c, n_segment)
-        x_shift = x_shift.view(n_batch, h, w, c, self.n_segment)
-        x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
-        x_shift = x_shift.contiguous().view(nt, c, h, w)
+        # x_shift = x.view(n_batch, self.n_segment, c, h, w)
+        # x_shift = x_shift.permute([0, 3, 4, 2, 1])  # (n_batch, h, w, c, n_segment)
+        # x_shift = x_shift.contiguous().view(n_batch * h * w, c, self.n_segment)
+        # x_shift = self.action_shift(x_shift)  # (n_batch*h*w, c, n_segment)
+        # x_shift = x_shift.view(n_batch, h, w, c, self.n_segment)
+        # x_shift = x_shift.permute([0, 4, 3, 1, 2])  # (n_batch, n_segment, c, h, w)
+        # x_shift = x_shift.contiguous().view(nt, c, h, w)
 
+        x_shift = x
         x_p2 = self.my2Dblock(x_shift)
         x_p2 = x_shift * x_p2 + x_shift
 
