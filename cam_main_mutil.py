@@ -29,45 +29,54 @@ def get_path():
     return current_directory
 
 
-
 def merge_images_in_folders(folder_paths, output_path):
     images_per_folder = 8
-    gap_size = 10  # 调整图片之间的间隙大小
-    row_images = []
+    gap_size = 10  # 图片之间的间隙大小
 
+    # 读取所有文件夹内的图片
+    row_images = []
     for folder_path in folder_paths:
         row_images_folder = []
         for i in range(images_per_folder):
-            image_path = f"{folder_path}/{i+1}.jpg"  # 假设图片名称为image_1.jpg, image_2.jpg, ...
+            image_path = f"{folder_path}/{i+1}.jpg"  # Assumes image names are 1.jpg, 2.jpg, ...
             image = Image.open(image_path)
             row_images_folder.append(image)
         row_images.append(row_images_folder)
 
-    max_widths = [max(image.width for image in row) for row in row_images]
-    total_width = sum(max_widths) + (images_per_folder - 1) * gap_size
-    max_height = max(image.height for row in row_images for image in row)
-
-    new_image = Image.new("RGB", (total_width, max_height * len(row_images)))
+    # 计算新图片的尺寸
+    max_heights = [max(image.height for image in row) for row in row_images] # 修改1：计算每行最大高度
+    total_height = sum(max_heights) + (len(row_images) - 1) * gap_size # 修改2：计算总高度，并添加行间隙
+    max_width = max(sum(image.width for image in row) + (images_per_folder - 1) * gap_size for row in row_images) # 修改3：每行宽度加上列间隙
+    
+    # 创建新图片
+    new_image = Image.new("RGB", (max_width, total_height))
 
     y_offset = 0
-    for row_images_folder, max_width in zip(row_images, max_widths):
+    for row_num, row in enumerate(row_images):
         x_offset = 0
-        for image in row_images_folder:
-            new_image.paste(image, (x_offset, y_offset))
-            x_offset += max_width + gap_size
-        y_offset += max_height
 
+        max_height = max_heights[row_num]
+        for image in row:
+            new_image.paste(image, (x_offset, y_offset))
+            x_offset += image.width + gap_size  # 修改4：将x_offset更新为基于图片宽度和间隙
+
+        y_offset += max_height + gap_size  # 修改5：添加行间隙
+
+    # 最后的gap_size不需要，所以我们从y_offset中减去
+    new_image = new_image.crop((0, 0, max_width, y_offset - gap_size))
+
+    # 保存新图片
     new_image.save(output_path)
 
 
 
 def cam_process(train_loader, norm_param, action_net_model, mrc_model, iff_model, mrc_and_iff_model):
     # 使用示例 # 五个文件夹的路径列表
-    folder_paths = ["cam_results/srcimages",
-                    "cam_results/action_net_camimages", 
-                    "cam_results/mrc_camimages",
-                    "cam_results/iff_camimages", 
-                    "cam_results/mrc_and_iff_camimages"]  
+    folder_paths = ["cam_results/srcimages/",
+                    "cam_results/action_net_camimages/", 
+                    "cam_results/mrc_camimages/",
+                    "cam_results/iff_camimages/", 
+                    "cam_results/mrc_and_iff_camimages/"]  
     # classifier   layer4
     action_net_cam = ClassAttentionMapping(action_net_model, 'base_model.classifier', 'new_fc.weight', norm_param)
     mrc_cam = ClassAttentionMapping(mrc_model, 'base_model.classifier', 'new_fc.weight', norm_param)
@@ -78,8 +87,12 @@ def cam_process(train_loader, norm_param, action_net_model, mrc_model, iff_model
     total = len(record_dict)
 
     for input, _, target in train_loader:
-        for label in target:
-            label = int(label)
+        for input_batch, target_batch in zip(input, target):
+            # 在这里对每个input和target进行操作
+            # print("Input:", input_batch.shape)
+            # print("Target:", target_batch.item())
+            label = int(target_batch.item())
+            input[0] = input_batch
             if record_dict[label] == 0:
                 total -= 1
                 record_dict[label] = 1
@@ -89,22 +102,24 @@ def cam_process(train_loader, norm_param, action_net_model, mrc_model, iff_model
                 mrc_and_iff_cam_out = mrc_and_iff_cam(input[0].cuda())
 
                 for i, (src_img, dst_img) in enumerate(zip(*action_net_cam_out)):
-                    cv2.imwrite("cam_results/srcimages/" + str(i + 1) + ".jpg", src_img)
-                    cv2.imwrite("cam_results/action_net_camimages/" + str(i + 1) + ".jpg", dst_img)
+                    cv2.imwrite(folder_paths[0] + str(i + 1) + ".jpg", src_img)
+                    cv2.imwrite(folder_paths[1] + str(i + 1) + ".jpg", dst_img)
                 for i, (src_img, dst_img) in enumerate(zip(*mrc_cam_out)):
-                    cv2.imwrite("cam_results/mrc_camimages/" + str(i + 1) + ".jpg", dst_img)
+                    cv2.imwrite(folder_paths[2] + str(i + 1) + ".jpg", dst_img)
                 for i, (src_img, dst_img) in enumerate(zip(*iff_cam_out)):
-                    cv2.imwrite("cam_results/iff_camimages/" + str(i + 1) + ".jpg", dst_img)
+                    cv2.imwrite(folder_paths[3] + str(i + 1) + ".jpg", dst_img)
                 for i, (src_img, dst_img) in enumerate(zip(*mrc_and_iff_cam_out)):
-                    cv2.imwrite("cam_results/mrc_and_iff_camimages/" + str(i + 1) + ".jpg", dst_img)
+                    cv2.imwrite(folder_paths[4] + str(i + 1) + ".jpg", dst_img)
                 
                 # 合并后的图片保存路径
                 output_path = "cam_results/mergre_results/" + str(label) + ".jpg" 
                 merge_images_in_folders(folder_paths, output_path)
+                print("cam_results/mergre_results/" + str(label) + ".jpg" + "   has been saved!")
+
             else:
                 continue
-            if total == 0:
-                break
+        if total == 0:
+            break
 
  
 
@@ -118,9 +133,9 @@ def main():
 
     dir = get_path()
     
-    checkpoint_path_action_net = dir + "/weights/mobilenetv2classify.pth"
-    checkpoint_path_mrc = dir + "/weights/mobilenetv2classify.pth"
-    checkpoint_path_iff = dir + "/weights/mobilenetv2classify.pth"
+    checkpoint_path_action_net = dir + "/weights/mobilenetv2classifyaction.pth"
+    checkpoint_path_mrc = dir + "/weights/mobilenetv2classifymrc.pth"
+    checkpoint_path_iff = dir + "/weights/mobilenetv2classifyiff.pth"
     checkpoint_path_mrc_and_iff = dir + "/weights/mobilenetv2classify.pth"
 
     action_net_model = torch.load(checkpoint_path_action_net, map_location=torch.device("cpu")).module 

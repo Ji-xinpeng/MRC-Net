@@ -10,7 +10,7 @@ class ClassAttentionMapping():
         self.net.eval()
         self.finalconv_name = finalconv_name
         self.norm_param = norm_param
-        print("norm_param:",norm_param)
+        # print("norm_param:",norm_param)
         self.features_blobs = []
         self.param_idx = -1
         if type(param_idx) == str:
@@ -68,7 +68,7 @@ class ClassAttentionMapping():
             probs, idxes = h_x.sort(0, True)
             prob = probs.cpu().numpy()[0]
             idx = idxes.cpu().numpy()[0]
-            print("idx={}, prob={:.4f}".format(idx, prob))
+            # print("idx={}, prob={:.4f}".format(idx, prob))
         else:
             idx = class_idx
         class_weight = np.squeeze(list(self.net.parameters())[self.param_idx].data.cpu().numpy())[idx]
