@@ -99,7 +99,7 @@ def cam_process(train_loader, norm_param, action_net_model, mrc_model, iff_model
                     cv2.imwrite("cam_results/mrc_and_iff_camimages/" + str(i + 1) + ".jpg", dst_img)
                 
                 # 合并后的图片保存路径
-                output_path = "cam_results/" + str(label) + ".jpg" 
+                output_path = "cam_results/mergre_results/" + str(label) + ".jpg" 
                 merge_images_in_folders(folder_paths, output_path)
             else:
                 continue
