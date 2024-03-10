@@ -21,6 +21,15 @@ from PIL import Image
 
 
 
+def get_path():
+    # 获取当前文件路径
+    current_file = os.path.abspath(__file__)
+    # 获取所在目录路径
+    current_directory = os.path.dirname(current_file)
+    return current_directory
+
+
+
 def merge_images_in_folders(folder_paths, output_path):
     images_per_folder = 8
     gap_size = 10  # 调整图片之间的间隙大小
@@ -52,49 +61,50 @@ def merge_images_in_folders(folder_paths, output_path):
 
 
 
-def cam_process(train_loader, norm_param, break_index, action_net_model, mrc_model, iff_model, mrc_and_iff_model):
+def cam_process(train_loader, norm_param, action_net_model, mrc_model, iff_model, mrc_and_iff_model):
     # 使用示例 # 五个文件夹的路径列表
     folder_paths = ["cam_results/srcimages",
                     "cam_results/action_net_camimages", 
                     "cam_results/mrc_camimages",
                     "cam_results/iff_camimages", 
                     "cam_results/mrc_and_iff_camimages"]  
-    
-    action_net_cam = ClassAttentionMapping(action_net_model, 'base_model.layer4', 'new_fc.weight', norm_param)
-    mrc_cam = ClassAttentionMapping(mrc_model, 'base_model.layer4', 'new_fc.weight', norm_param)
-    iff_cam = ClassAttentionMapping(iff_model, 'base_model.layer4', 'new_fc.weight', norm_param)
-    mrc_and_iff_cam = ClassAttentionMapping(mrc_and_iff_model, 'base_model.layer4', 'new_fc.weight', norm_param)
+    # classifier   layer4
+    action_net_cam = ClassAttentionMapping(action_net_model, 'base_model.classifier', 'new_fc.weight', norm_param)
+    mrc_cam = ClassAttentionMapping(mrc_model, 'base_model.classifier', 'new_fc.weight', norm_param)
+    iff_cam = ClassAttentionMapping(iff_model, 'base_model.classifier', 'new_fc.weight', norm_param)
+    mrc_and_iff_cam = ClassAttentionMapping(mrc_and_iff_model, 'base_model.classifier', 'new_fc.weight', norm_param)
 
-    record_dict = {key: 0 for key in range(1, 84)}
+    record_dict = {key: 0 for key in range(0, 83)}
     total = len(record_dict)
 
     for input, _, target in train_loader:
-        target = int(target)
-        if record_dict[target] == 0:
-            total -= 1
-            record_dict[target] = 1
-            action_net_cam_out = action_net_cam(input[0].cuda())
-            mrc_cam_out = mrc_cam(input[0].cuda())
-            iff_cam_out = iff_cam(input[0].cuda())
-            mrc_and_iff_cam_out = mrc_and_iff_cam(input[0].cuda())
+        for label in target:
+            label = int(label)
+            if record_dict[label] == 0:
+                total -= 1
+                record_dict[label] = 1
+                action_net_cam_out = action_net_cam(input[0].cuda())
+                mrc_cam_out = mrc_cam(input[0].cuda())
+                iff_cam_out = iff_cam(input[0].cuda())
+                mrc_and_iff_cam_out = mrc_and_iff_cam(input[0].cuda())
 
-            for i, (src_img, dst_img) in enumerate(zip(*action_net_cam_out)):
-                cv2.imwrite("cam_results/srcimages/" + str(i + 1) + ".jpg", src_img)
-                cv2.imwrite("cam_results/action_net_camimages/" + str(i + 1) + ".jpg", dst_img)
-            for i, (src_img, dst_img) in enumerate(zip(*mrc_cam_out)):
-                cv2.imwrite("cam_results/mrc_camimages/" + str(i + 1) + ".jpg", dst_img)
-            for i, (src_img, dst_img) in enumerate(zip(*iff_cam_out)):
-                cv2.imwrite("cam_results/iff_camimages/" + str(i + 1) + ".jpg", dst_img)
-            for i, (src_img, dst_img) in enumerate(zip(*mrc_and_iff_cam_out)):
-                cv2.imwrite("cam_results/mrc_and_iff_camimages/" + str(i + 1) + ".jpg", dst_img)
-            
-            # 合并后的图片保存路径
-            output_path = "cam_results/" + str(target) + ".jpg" 
-            merge_images_in_folders(folder_paths, output_path)
-        else:
-            continue
-        if total == 0:
-            break
+                for i, (src_img, dst_img) in enumerate(zip(*action_net_cam_out)):
+                    cv2.imwrite("cam_results/srcimages/" + str(i + 1) + ".jpg", src_img)
+                    cv2.imwrite("cam_results/action_net_camimages/" + str(i + 1) + ".jpg", dst_img)
+                for i, (src_img, dst_img) in enumerate(zip(*mrc_cam_out)):
+                    cv2.imwrite("cam_results/mrc_camimages/" + str(i + 1) + ".jpg", dst_img)
+                for i, (src_img, dst_img) in enumerate(zip(*iff_cam_out)):
+                    cv2.imwrite("cam_results/iff_camimages/" + str(i + 1) + ".jpg", dst_img)
+                for i, (src_img, dst_img) in enumerate(zip(*mrc_and_iff_cam_out)):
+                    cv2.imwrite("cam_results/mrc_and_iff_camimages/" + str(i + 1) + ".jpg", dst_img)
+                
+                # 合并后的图片保存路径
+                output_path = "cam_results/" + str(label) + ".jpg" 
+                merge_images_in_folders(folder_paths, output_path)
+            else:
+                continue
+            if total == 0:
+                break
 
  
 
@@ -105,16 +115,18 @@ def cam_process(train_loader, norm_param, break_index, action_net_model, mrc_mod
 def main():
     # 加载模型                                       
     print("load model")
-    
-    checkpoint_path_action_net = "EgoGesture-resnet50/2023-12-26-22-36-58/clip_len_8frame_sample_rate_1_checkpoint.pth.tar"
-    checkpoint_path_mrc = "/home/ubuntu/Desktop/jixinpeng/clip_len_8frame_sample_rate_1_checkpoint.pth.tar"
-    checkpoint_path_iff = "/home/ubuntu/Desktop/jixinpeng/clip_len_8frame_sample_rate_1_checkpoint.pth.tar"
-    checkpoint_path_mrc_and_iff = "/home/ubuntu/Desktop/jixinpeng/clip_len_8frame_sample_rate_1_checkpoint.pth.tar"
 
-    action_net_model = torch.load(checkpoint_path_action_net, map_location=torch.device("cpu")) 
-    mrc_model = torch.load(checkpoint_path_mrc, map_location=torch.device("cpu")) 
-    iff_model = torch.load(checkpoint_path_iff, map_location=torch.device("cpu")) 
-    mrc_and_iff_model = torch.load(checkpoint_path_mrc_and_iff, map_location=torch.device("cpu")) 
+    dir = get_path()
+    
+    checkpoint_path_action_net = dir + "/weights/mobilenetv2classify.pth"
+    checkpoint_path_mrc = dir + "/weights/mobilenetv2classify.pth"
+    checkpoint_path_iff = dir + "/weights/mobilenetv2classify.pth"
+    checkpoint_path_mrc_and_iff = dir + "/weights/mobilenetv2classify.pth"
+
+    action_net_model = torch.load(checkpoint_path_action_net, map_location=torch.device("cpu")).module 
+    mrc_model = torch.load(checkpoint_path_mrc, map_location=torch.device("cpu")).module 
+    iff_model = torch.load(checkpoint_path_iff, map_location=torch.device("cpu")).module  
+    mrc_and_iff_model = torch.load(checkpoint_path_mrc_and_iff, map_location=torch.device("cpu")).module  
 
     action_net_model = action_net_model.cuda()    
     mrc_model = mrc_model.cuda()
@@ -128,8 +140,8 @@ def main():
     
     # 加载数据集
     train_loader, val_loader = load_dataset()
-    break_index = 1
-    cam_process(train_loader, norm_param, break_index, action_net_model, mrc_model, iff_model, mrc_and_iff_model)
+
+    cam_process(val_loader, norm_param, action_net_model, mrc_model, iff_model, mrc_and_iff_model)
 
     
 

@@ -25,7 +25,9 @@ class ClassAttentionMapping():
     def get_output_feature(self, layer_name):
         features_blobs = []
         def hook_feature(module, input, output): features_blobs.append(output.data.cpu().numpy())
-        layer = self.net._modules['base_model']._modules['layer4']
+        print(self.net._modules['base_model']._modules)
+        # layer = self.net._modules['base_model']._modules['layer4']
+        layer = self.net._modules['base_model']._modules[layer_name]
         layer.register_forward_hook(hook_feature)
         self.features_blobs = features_blobs
     
