@@ -18,7 +18,7 @@ def parse_opts():
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=24)
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--clip_len', type=int, default=8)
 
@@ -51,7 +51,7 @@ def parse_opts():
     parser.add_argument('--num_heads', default=2, type=str) # 自注意力机制头数
     parser.add_argument('--reduce_num', default=32, type=str)  # my_block 通道减少的数量
     parser.add_argument('--if_need_load_dataset', default=False, type=str)  #
-    parser.add_argument('--begin_split', default=1, type=str)  # my_block
+    parser.add_argument('--begin_split', default=0, type=str)  # my_block
     parser.add_argument('--if_get_data_and_label', default=True, type=str)
     parser.add_argument('--is_detector_classify', default="classify", type=str) # classify detect
     parser.add_argument('--is_mobile_v3_small', default=True, type=str)

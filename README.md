@@ -14,3 +14,9 @@ https://nlpr.ia.ac.cn/iva/yfzhang/datasets/egogesture.html
 
 # tello control doc
 https://blog.csdn.net/ChinaYouxin/article/details/131426113
+
+
+
+
+![alt text](image.png)     94.43
+94.25
