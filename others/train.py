@@ -8,6 +8,8 @@ from tensorboardX import SummaryWriter
 from torch.nn.utils import clip_grad_norm_
 from others.record import *
 import torch.nn.functional as F
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 
 class AverageMeter(object):
@@ -263,12 +265,13 @@ def my_train(model, train_dataloader, val_dataloader, device, record, policies=N
                 # 获取上一级目录路径
                 parent_directory = os.path.dirname(current_directory)
 
-                save_path = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + ".pth")
+                save_path = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + args.describe + ".pth")
                 # if args.is_train_for_system:
                 #     save_path = save_path.split('.pth')[0] + '_for_system.pth'
                 utils.save_checkpoint(model, optimizer, save_path + '.tar')
                 torch.save(model, save_path)
 
+                save_confusion_matrix(model, val_dataloader)
 
             if top5_acc > best_acc_top5:
                 best_acc_top5 = top5_acc
@@ -278,3 +281,55 @@ def my_train(model, train_dataloader, val_dataloader, device, record, policies=N
         utils.adjust_learning_rate(params['learning_rate'], optimizer, epoch, args.lr_steps)
     writer.close
 
+
+def select_label(labels):
+    if labels in args.system_label:
+        return True
+    return False
+
+
+# 绘制混淆矩阵
+def save_confusion_matrix(model, val_dataloader):
+    model.eval()
+
+    # 存储预测结果
+    predictions = []
+    true_labels = []
+
+    # 对测试数据进行预测
+    with torch.no_grad():
+        for step, inputs in enumerate(val_dataloader):
+            rgb, depth, labels = inputs[0], inputs[1], inputs[2]
+            outputs = model(rgb)
+            _, predicted = torch.max(outputs.data, 1)
+
+            pre = predicted.cpu().numpy()
+            lab = labels.cpu().numpy()
+            
+            # for i in range(len(lab)):
+            #     if select_label(lab[i]):
+            #         predictions.append(lab[i])
+            #         true_labels.append(pre[i])
+            #     else:
+            #         continue
+            predictions.extend(pre)
+            true_labels.extend(lab)
+
+    # 生成混淆矩阵
+    cm = confusion_matrix(true_labels, predictions)
+    cm_selected_columns = cm[args.system_label, :][:, args.system_label]
+
+    # 设置分类的标签
+    class_labels = args.system_label
+
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm_selected_columns, annot=True, fmt='d', cmap='Blues', cbar=False, xticklabels=class_labels, yticklabels=class_labels, linewidths=.5)
+    plt.xlabel("True labels")
+    plt.ylabel("Predict labels")
+    plt.title("The confusion matrix of partially similar gestures for IMR-Net on " + args.dataset)
+    plt.grid(False)
+
+    # 保存为图片
+    plt.savefig('./confusion_matrix.png')
+    # 显示图形
+    plt.show()

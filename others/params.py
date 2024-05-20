@@ -14,11 +14,11 @@ warnings.filterwarnings("ignore")
 
 def parse_opts():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cuda_id', type=str, default='3')
+    parser.add_argument('--cuda_id', type=str, default='0')
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=24)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--clip_len', type=int, default=8)
 
@@ -41,6 +41,9 @@ def parse_opts():
     parser.add_argument('--dropout', default=0.5, type=float)
     parser.add_argument('--base_model', default='mobilenetv2', type=str)  # resnet50   mobilenetv2    BNInception
     parser.add_argument('--dataset', default='EgoGesture', type=str)   # sthv2    EgoGesture    jester
+
+    parser.add_argument('--describe', type=str, default='mrciff')
+
     parser.add_argument('--weight_decay', '--wd', default=5e-4, type=float,
                         metavar='W', help='weight decay (default: 5e-4)')
     parser.add_argument('--epochs', default=60, type=int, metavar='N',
@@ -56,7 +59,7 @@ def parse_opts():
     parser.add_argument('--is_detector_classify', default="classify", type=str) # classify detect
     parser.add_argument('--is_mobile_v3_small', default=True, type=str)
 
-    parser.add_argument('--system_label', type=float, default=[62, 63, 80, 81, 2, 3, 60, 61, 76, 77, 4, 5, 13, 14])
+    parser.add_argument('--system_label', type=float, default=[4, 5, 13, 14, 24, 33, 60, 61, 68, 69, 76, 77, 80, 81])
     # 正常训练把下面两个参数设置为 False
     parser.add_argument('--is_train_for_system', default=False, type=str)
     parser.add_argument('--less_kind_of_system_modes', default=False, type=str)
