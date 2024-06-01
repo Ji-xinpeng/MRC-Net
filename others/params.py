@@ -14,11 +14,24 @@ warnings.filterwarnings("ignore")
 
 def parse_opts():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cuda_id', type=str, default='0')
+    parser.add_argument('--cuda_id', type=str, default='0') # 指定用哪个GPU
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
+                        metavar='LR', help='initial learning rate')
+    parser.add_argument('--lr_steps', type=float, default=[15, 30, 45], nargs="+",
+                        help='lr steps for decreasing learning rate')
+    parser.add_argument('--epochs', default=60, type=int, metavar='N',
+                        help='number of total epochs to run')
+    
+    parser.add_argument('--base_model', default='mobilenetv2', type=str)  # resnet50   mobilenetv2    BNInception
+    parser.add_argument('--dataset', default='EgoGesture', type=str)   # sthv2    EgoGesture    jester
+
+
+    
 
     # args for dataloader
     parser.add_argument('--is_train', action="store_true", default=True)
-    parser.add_argument('--batch_size', type=int, default=32)
+    
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--clip_len', type=int, default=8)
 
@@ -29,25 +42,20 @@ def parse_opts():
                         help='Number of scales for multiscale cropping')
     parser.add_argument('--scale_step', default=0.84089641525, type=float,
                         help='Scale step for multiscale cropping')
-    parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
-                        metavar='LR', help='initial learning rate')
-    parser.add_argument('--lr_steps', type=float, default=[15, 30, 45], nargs="+",
-                        help='lr steps for decreasing learning rate')
+
     parser.add_argument('--clip_gradient', '--gd', type=int, default=20, help='gradient clip')
     parser.add_argument('--shift_div', default=8, type=int)
     parser.add_argument('--is_shift', action="store_true", default=True)
     parser.add_argument('--npb', action="store_true")
     parser.add_argument('--pretrain', type=str, default='imagenet')  # 'imagenet' or False
     parser.add_argument('--dropout', default=0.5, type=float)
-    parser.add_argument('--base_model', default='mobilenetv2', type=str)  # resnet50   mobilenetv2    BNInception
-    parser.add_argument('--dataset', default='EgoGesture', type=str)   # sthv2    EgoGesture    jester
+
 
     parser.add_argument('--describe', type=str, default='mrciff')
 
     parser.add_argument('--weight_decay', '--wd', default=5e-4, type=float,
                         metavar='W', help='weight decay (default: 5e-4)')
-    parser.add_argument('--epochs', default=60, type=int, metavar='N',
-                        help='number of total epochs to run')
+
     parser.add_argument('--pretrained', default='imagenet', type=str)
     parser.add_argument('--use_video_swin_transformer', default=False, type=str)
     parser.add_argument('--change_resnet_head', default=False, type=str)  # 改为 True 就改变 resnet 开头几层网络

@@ -225,7 +225,7 @@ def my_train(model, train_dataloader, val_dataloader, device, record, policies=N
     criterion = nn.CrossEntropyLoss().to(device)
     if policies == None:
         policies = model.get_optim_policies()
-    model = nn.DataParallel(model)  # multi-Gpu
+    # model = nn.DataParallel(model)  # multi-Gpu
     model = model.to(device)
     model.cuda()
     if params['recover_from_checkpoint'] is not None:
@@ -271,7 +271,7 @@ def my_train(model, train_dataloader, val_dataloader, device, record, policies=N
                 utils.save_checkpoint(model, optimizer, save_path + '.tar')
                 torch.save(model, save_path)
 
-                save_confusion_matrix(model, val_dataloader)
+                # save_confusion_matrix(model, val_dataloader)
 
             if top5_acc > best_acc_top5:
                 best_acc_top5 = top5_acc
