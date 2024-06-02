@@ -1,6 +1,5 @@
 import argparse
 import os
-# from PIL import Image
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -64,7 +63,7 @@ def parse_opts():
     parser.add_argument('--if_need_load_dataset', default=False, type=str)  #
     parser.add_argument('--begin_split', default=0, type=str)  # my_block
     parser.add_argument('--if_get_data_and_label', default=True, type=str)
-    parser.add_argument('--is_detector_classify', default="detect", type=str) # classify detect
+    parser.add_argument('--is_detector_classify', default="classify", type=str) # classify detect
     parser.add_argument('--is_mobile_v3_small', default=True, type=str)
 
     parser.add_argument('--system_label', type=float, default=[4, 5, 13, 14, 24, 33, 60, 61, 68, 69, 76, 77, 80, 81])

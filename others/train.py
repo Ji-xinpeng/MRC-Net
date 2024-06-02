@@ -266,8 +266,6 @@ def my_train(model, train_dataloader, val_dataloader, device, record, policies=N
                 parent_directory = os.path.dirname(current_directory)
 
                 save_path = os.path.join(parent_directory + '/weights', args.base_model + args.is_detector_classify + args.describe + ".pth")
-                # if args.is_train_for_system:
-                #     save_path = save_path.split('.pth')[0] + '_for_system.pth'
                 utils.save_checkpoint(model, optimizer, save_path + '.tar')
                 torch.save(model, save_path)
 
