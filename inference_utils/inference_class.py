@@ -6,23 +6,12 @@ import onnxruntime
 import time
 import numpy as np
 import cv2
-import glob
-from PIL import Image
-# import tensorrt as trt
-# import pycuda.driver as cuda
-# import pycuda.autoinit
-# from pycuda.compiler import SourceModule
-from inference_utils.model_exchange import ModelExchange
-# logger to capture errors, warnings, and other information during the build and inference phases
-# TRT_LOGGER = trt.Logger()
 
 # 获取当前文件所在目录的上两级目录的路径
 two_up = Path(__file__).resolve().parents[1]
 sys.path.append(str(two_up))
 
 from others.train import *
-from models.models import *
-from others.params import *
 from deals.load_dataset import * 
 from inference_utils.load_inference_data import *
 
@@ -46,8 +35,8 @@ class Inference:
         self._is_gpu_available()
         self.cap = cv2.VideoCapture(0)
         self._get_device_info()
-        self._init_model_exchange_detect()
-        self._init_model_exchange_classify()
+        # self._init_model_exchange_detect()
+        # self._init_model_exchange_classify()
 
     def _init_model_exchange_detect(self):
         weights_name = self.checkpoint_path_detect
