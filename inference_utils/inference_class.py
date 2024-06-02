@@ -14,6 +14,7 @@ sys.path.append(str(two_up))
 from others.train import *
 from deals.load_dataset import * 
 from inference_utils.load_inference_data import *
+from inference_utils.model_exchange import ModelExchange
 
 class Inference:
     def __init__(self, checkpoint_path_classify: str,
@@ -35,8 +36,8 @@ class Inference:
         self._is_gpu_available()
         self.cap = cv2.VideoCapture(0)
         self._get_device_info()
-        # self._init_model_exchange_detect()
-        # self._init_model_exchange_classify()
+        self._init_model_exchange_detect()
+        self._init_model_exchange_classify()
 
     def _init_model_exchange_detect(self):
         weights_name = self.checkpoint_path_detect
