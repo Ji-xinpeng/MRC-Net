@@ -23,7 +23,7 @@ class InteractivaSystem:
         current_file = os.path.abspath(__file__)
         current_directory = os.path.dirname(current_file)
         self.checkpoint_path_detect = current_directory + '/weights/mobilenetv3_smalldetect.pth'
-        self.checkpoint_path_classify = current_directory + '/weights/mobilenetv2classify.pth'
+        self.checkpoint_path_classify = current_directory + '/weights/mobilenetv2classifymrciff.pth'
 
 
     def _init_inference_model(self):
