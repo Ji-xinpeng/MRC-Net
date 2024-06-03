@@ -305,9 +305,12 @@ current_directory = os.path.dirname(current_file)
 save_path = current_directory + '/EgoGesture_annotation'
 if not os.path.exists(save_path):
     os.mkdir(save_path)
-    construct_detect_annot(save_path, 'detect_val')
-    construct_detect_annot(save_path, 'detect_train')
-    construct_annot(save_path, 'train')
-    construct_annot(save_path, 'val')
-    construct_annot(save_path, 'test')
-    construct_annot(save_path, 'train_plus_val')
+    try:
+        construct_detect_annot(save_path, 'detect_val')
+        construct_detect_annot(save_path, 'detect_train')
+        construct_annot(save_path, 'train')
+        construct_annot(save_path, 'val')
+        construct_annot(save_path, 'test')
+        construct_annot(save_path, 'train_plus_val')
+    except:
+        print("数据集路径不对！")
